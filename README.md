@@ -1,5 +1,4 @@
 # Biosensor
-# Quantitative Fluorescent Speckle Microscopy
 ![Alt Text](img/biosensorpkg.jpg?raw=true)
 
 This MATLAB software package allows processing of raw ratiometric biosensor images (for example based on FRET) into fully corrected "ratio maps" or "activation maps" — images showing the localized activation of the biosensor. This includes application of all necessary image corrections needed for quantitative widefield imaging of ratiometric biosensors.
