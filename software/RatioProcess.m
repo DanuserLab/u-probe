@@ -6,7 +6,7 @@ classdef RatioProcess < DoubleProcessingProcess
     %Hunter Elliott,
     %6/2010
 %
-% Copyright (C) 2018, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2019, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

@@ -20,7 +20,7 @@ function [dX,dY,dZ] = gradientFilterGauss3D(input, sigma, borderCondition)
 % Hunter Elliott, added 01/21/2010
 % Modelled after filterGauss3D.m
 %
-% Copyright (C) 2018, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2019, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
