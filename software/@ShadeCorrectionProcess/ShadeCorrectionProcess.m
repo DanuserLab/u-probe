@@ -121,9 +121,6 @@ classdef ShadeCorrectionProcess < ImageCorrectionProcess
             funParams.GaussFilterSigma = 0;
             funParams.Normalize = 1;
             funParams.BatchMode = false;
-
-            funParams.DoDarkCurrentCorrectionForShadeImages = false;
-            funParams.DarkImageDirectoriesForShadeImages = []; %No default for this! It will be handled differently...
         end
     end
 end
