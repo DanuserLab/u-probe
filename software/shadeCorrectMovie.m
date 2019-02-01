@@ -83,6 +83,10 @@ function movieData = shadeCorrectMovie(movieData,paramsIn)
 % 11/2009
 % Revamped 5/2010
 %
+% 
+% Modified by
+% Qiongjing (Jenny) Zou, Jan 2019
+% Added section "Do Dark Current Correction for Shade Correction Images" as Hunter requested by email in May 2018
 %
 % Copyright (C) 2019, Danuser Lab - UTSouthwestern 
 %
@@ -102,6 +106,7 @@ function movieData = shadeCorrectMovie(movieData,paramsIn)
 % along with BiosensorsPackage.  If not, see <http://www.gnu.org/licenses/>.
 % 
 % 
+
 
 %% ------ Parameters ------- %%
 
@@ -208,6 +213,148 @@ else
     
 end
 
+%% ------------ (NEW) Do Dark Current Correction for Shade Correction Images ----------- %%
+if p.DoDarkCurrentCorrectionForShadeImages
+    
+    % sanity check
+    if isempty(p.DarkImageDirectoriesForShadeImages)
+        error('Please specify dark-current correction image directories for shade correction images!')
+    else
+        %Check how many directories were specified
+        iDarkDir = find(cellfun(@(x)(~isempty(x)),p.DarkImageDirectoriesForShadeImages));
+        iShadeDir = find(cellfun(@(x)(~isempty(x)),p.ShadeImageDirectories));
+        
+        if length(iDarkDir) < length(iShadeDir)
+            error('You must specify a dark-current correction image directory for each shade correction image directory!')
+        end
+        
+        %Check whether dark-current correction images have the same size as shade correction image
+        for i = 1:length(iDarkDir)
+            DarkfileNames = imDir(p.DarkImageDirectoriesForShadeImages{i},true);
+            
+            if isempty(DarkfileNames)
+                error('lccb:set:fatal', ...
+                    ['No proper image files are detected in:\n\n ',p.DarkImageDirectoriesForShadeImages{i}, ...
+                    '\n\nPlease double check your channel path.'])
+            end
+            
+            shadeImNames = movieData.processes_{iProc}.getCorrectionImageFileNames(p.ChannelIndex(i));
+            ShadeImInfo = imfinfo([p.ShadeImageDirectories{iShadeDir(i)} filesep shadeImNames{1}{1}]);
+
+            for j = 1:length(DarkfileNames)
+                DarkImInfo = imfinfo([p.DarkImageDirectoriesForShadeImages{i} filesep DarkfileNames(j).name]);
+
+                if DarkImInfo.Width ~= ShadeImInfo.Width || DarkImInfo.Height ~= ShadeImInfo.Height
+                    error('lccb:set:fatal', ...
+                        ['Dark current correction image - \n\n',...
+                        obj.inFilePaths_{2,i},filesep,DarkfileNames(j).name,...
+                        '\n\nmust have the same size as shade correction images. Please double check your dark correction image data.'])
+                end
+            end
+        end
+        
+    end
+    
+    %% ----------- Get and Process Dark Current Correction Images ------------- %%
+    %Loads, averages, and filters the dark current correction images
+    
+    disp('Loading and processing dark-current correction image...')
+    
+    %Go through each requested channel and process the dark current correction
+    darkIm = cell(1,nChanCorr);
+    for iChan = 1:nChanCorr
+        
+        % ---- Average the dark images --- %
+        darkImFileNames=imDir(p.DarkImageDirectoriesForShadeImages{iChan});
+        nDarkIm = length(darkImFileNames);
+        
+        for iImage = 1:nDarkIm
+            
+            currIm = imread([p.DarkImageDirectoriesForShadeImages{iChan} filesep darkImFileNames(iImage).name]);
+            
+            if iImage == 1
+                darkIm{iChan} = zeros(size(currIm));
+            end
+            
+            %Average the images together
+            darkIm{iChan} = darkIm{iChan} + double(currIm) ./ nDarkIm;
+        
+        end
+        
+        %---Filter the averaged dark image---%
+        
+        %Median filter
+        if p.MedianFilter % just use the same parameter as Shade Correction
+            %Add a border to prevent distortion
+            darkIm{iChan} = medfilt2(darkIm{iChan},'symmetric'); %Uses default 3x3 neighborhood
+        end
+        
+        %Gaussian filter
+        if p.GaussFilterSigma >= 1 % just use the same parameter as Shade Correction
+            darkIm{iChan} = filterGauss2D(darkIm{iChan},p.GaussFilterSigma);
+        end
+        
+    end
+    
+    
+    %% -------------- Apply dark Correction ------------%%
+    %Applies the dark correction from above to each selected channel
+    
+    disp('Applying dark current correction to shade correction images...')
+    
+    
+    %Go through each image and apply the appropriate dark current correction
+    for iChan = 1:nChanCorr
+        
+        shadeOutDir{iChan} = [p.OutputDirectory filesep ...
+            'darkCorrected_shade_images_for_channel_' num2str(p.ChannelIndex(iChan))];    
+        %Check/create directory
+        mkClrDir(shadeOutDir{iChan});
+        
+        darkCorrDir = p.DarkImageDirectoriesForShadeImages{iChan};
+        shadeCorrDir = movieData.processes_{iProc}.inFilePaths_{2,p.ChannelIndex(iChan)}; %original shade images
+        
+        disp(['Dark-current correcting channel ' num2str(p.ChannelIndex(iChan)) '...'])
+        disp(['Using dark-current correction images in ' darkCorrDir])
+        disp(['Correcting images from channel ' num2str(p.ChannelIndex(iChan)) ', resulting images will be stored in ' shadeOutDir{iChan}])
+        
+        shadeImFileNames = imDir(shadeCorrDir);
+        nShadeImages = length(shadeImFileNames);
+        
+        for iImage = 1:nShadeImages
+            
+            %Load the image to be corrected
+            currIm = imread([shadeCorrDir filesep shadeImFileNames(iImage).name]);
+            
+            %Check it's class
+            ogClass = class(currIm);
+            
+            %Correct it
+            currIm = double(currIm) - darkIm{iChan};
+            
+            if min(currIm(:)) < 1
+                %Make sure that the correction makes sense...
+                warning('BIOSENSORS:dkCorrect:badDarkCorr',...
+                    'Dark current correction resulted in non-positive image values! Check correction images...')
+            end
+            
+            %Cast to original class
+            currIm = cast(currIm,ogClass);
+            
+            %Write it to disk
+            imwrite(currIm,[shadeOutDir{iChan} filesep 'dark_current_corrected_shade_' num2str(iImage,['%0' num2str(floor(log10(nShadeImages))+1) '.f']) '.tif' ]);
+            
+        end
+    end
+    
+    
+    disp('Finished Correcting!')
+    
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%% (END NEW) Do Dark Current Correction for Shade Correction Images %%%%%%%%%%%%%%%%%%%%%%%
+
+
 %% ------------ Init ---------- %%
 
 
@@ -244,8 +391,7 @@ end
 movieData.processes_{iProc}.setOutFilePaths(outFilePaths);
 
 
-%Get the shade image file names.
-shadeImNames = movieData.processes_{iProc}.getCorrectionImageFileNames(p.ChannelIndex);
+%Get the analysis image file names.
 if all(hasDarkCorr)
     %Get image file names for input images (dark-current corrected images)
     inNames =  movieData.processes_{iProc}.getInImageFileNames(p.ChannelIndex);
@@ -261,18 +407,29 @@ nImTot = nImages * nChanCorr;
 %% ----------- Get and Process Shade Correction Images ------------- %%
 %Loads, averages, filters  and normalizes the shade correction images
 
-disp('Loading and processing correction image(s)...')
+disp('Loading and processing shade correction image(s)...')
 
 %Go through each requested channel and process the shade correction
 shadeIm = cell(1,nChanCorr);
 for iChan = 1:nChanCorr
-    
+
+    %Get the shade image file names.
+    if p.DoDarkCurrentCorrectionForShadeImages
+        shadeImNames = imDir(shadeOutDir{iChan});
+        nShadeIm = length(shadeImNames);
+    else
+        shadeImNames = movieData.processes_{iProc}.getCorrectionImageFileNames(p.ChannelIndex(iChan));
+        nShadeIm = cellfun(@(x) numel(x),shadeImNames);
+    end
+
     % ---- Average the shade images --- %
-    nShadeIm = length(shadeImNames{iChan});
     for iImage = 1:nShadeIm
-        
-        currIm = imread([p.ShadeImageDirectories{iShadeDir(iChan)} ...
-            filesep shadeImNames{iChan}{iImage}]);
+        if p.DoDarkCurrentCorrectionForShadeImages
+            currIm = imread([shadeOutDir{iChan} filesep shadeImNames(iImage).name]);
+        else
+            currIm = imread([p.ShadeImageDirectories{iShadeDir(iChan)} ...
+                filesep shadeImNames{1}{iImage}]);
+        end        
         
         
         if iImage == 1
@@ -329,8 +486,12 @@ end
 for iChan = 1:nChanCorr
     
     inDir  = movieData.processes_{iProc}.inFilePaths_{1,p.ChannelIndex(iChan)};    
-    outDir = movieData.processes_{iProc}.outFilePaths_{1,p.ChannelIndex(iChan)};    
-    corrDir = movieData.processes_{iProc}.inFilePaths_{2,p.ChannelIndex(iChan)};
+    outDir = movieData.processes_{iProc}.outFilePaths_{1,p.ChannelIndex(iChan)};
+    if p.DoDarkCurrentCorrectionForShadeImages
+        corrDir = shadeOutDir{iChan};
+    else
+        corrDir = movieData.processes_{iProc}.inFilePaths_{2,p.ChannelIndex(iChan)};
+    end
 
     disp(['Shade correcting channel ' num2str(p.ChannelIndex(iChan)) '...'])
     disp(['Correcting images from "' inDir '", resulting images will be stored in "' outDir '"']);     

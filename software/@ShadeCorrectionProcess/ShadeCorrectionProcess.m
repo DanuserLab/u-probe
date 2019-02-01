@@ -5,6 +5,9 @@ classdef ShadeCorrectionProcess < ImageCorrectionProcess
     %
     %Hunter Elliott, 5/2010
     %
+    % Modified by
+    % Qiongjing (Jenny) Zou, Jan 2019
+    % Added option to "Do Dark Current Correction for Shade Correction Images" as Hunter requested by email in May 2018
 %
 % Copyright (C) 2019, Danuser Lab - UTSouthwestern 
 %
@@ -24,7 +27,7 @@ classdef ShadeCorrectionProcess < ImageCorrectionProcess
 % along with BiosensorsPackage.  If not, see <http://www.gnu.org/licenses/>.
 % 
 % 
-    
+
     methods (Access = public)
         
         function obj = ShadeCorrectionProcess(owner,outputDir,funParams,shadeImagePaths,...
@@ -121,6 +124,9 @@ classdef ShadeCorrectionProcess < ImageCorrectionProcess
             funParams.GaussFilterSigma = 0;
             funParams.Normalize = 1;
             funParams.BatchMode = false;
+
+            funParams.DoDarkCurrentCorrectionForShadeImages = false;
+            funParams.DarkImageDirectoriesForShadeImages = []; %No default for this! It will be handled differently...
         end
     end
 end
