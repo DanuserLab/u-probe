@@ -18,7 +18,7 @@ function [outlierIdx,inlierIdx] = detectOutliers(observations,k)
 %Hunter Elliott, 6/4/2009  - switched median to nanmedian to support
 %missing observations.
 %
-% Copyright (C) 2019, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2020, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

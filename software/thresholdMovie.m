@@ -93,7 +93,7 @@ function movieData = thresholdMovie(movieDataOrProcess,paramsIn)
 %
 %% ----- Parameters ----- %%
 %
-% Copyright (C) 2019, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2020, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

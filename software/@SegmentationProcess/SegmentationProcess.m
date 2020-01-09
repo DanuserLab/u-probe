@@ -1,7 +1,7 @@
 classdef SegmentationProcess < MaskProcess
     % An abstract superclass of all segmentation processes
 %
-% Copyright (C) 2019, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2020, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
