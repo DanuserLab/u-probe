@@ -2,7 +2,7 @@ classdef ThresholdProcess < SegmentationProcess & NonSingularProcess
     %A function-specific process for segmenting via thresholding using
     %thresholdMovie.m
 %
-% Copyright (C) 2020, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2021, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

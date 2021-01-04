@@ -9,7 +9,7 @@ function multiScaleAutoSeg(movieDataOrProcess, iChan, varargin)
 % 2017/05/29, Jungsik Noh
 % Updated Andrew R. Jamieson Sept. 2017
 %
-% Copyright (C) 2020, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2021, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
