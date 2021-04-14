@@ -145,10 +145,10 @@ if isempty(deChannelIndex)
     return;
 end
 
-if nuChannelIndex == deChannelIndex
-    errordlg('Numerator and denominator cannot be the same ''Input Channel''.','Setting Error','modal')
-    return;
-end
+% if nuChannelIndex == deChannelIndex
+%     errordlg('Numerator and denominator cannot be the same ''Input Channel''.','Setting Error','modal')
+%     return;
+% end
 
 funParams.ChannelIndex = [nuChannelIndex deChannelIndex];
 
@@ -167,10 +167,10 @@ if get(handles.checkbox_mask, 'Value')
         return;
     end
     
-    if nuMaskChannelIndex==deMaskChannelIndex
-        errordlg('Numerator and denominator cannot be the same ''Mask Channel''.','Setting Error','modal')
-        return;
-    end
+%     if nuMaskChannelIndex==deMaskChannelIndex
+%         errordlg('Numerator and denominator cannot be the same ''Mask Channel''.','Setting Error','modal')
+%         return;
+%     end
     
     funParams.MaskChannelIndex = [nuMaskChannelIndex deMaskChannelIndex];
 end
