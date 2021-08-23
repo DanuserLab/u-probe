@@ -1,19 +1,19 @@
 function varargout = msaSegmentationProcessGUI(varargin)
-% MSASEGMENTATIONPROCESSGUI M-file for msaSegmentationProcessGUI.fig
+%MSASEGMENTATIONPROCESSGUI MATLAB code file for msaSegmentationProcessGUI.fig
 %      MSASEGMENTATIONPROCESSGUI, by itself, creates a new MSASEGMENTATIONPROCESSGUI or raises the existing
 %      singleton*.
 %
 %      H = MSASEGMENTATIONPROCESSGUI returns the handle to a new MSASEGMENTATIONPROCESSGUI or the handle to
 %      the existing singleton*.
 %
-%      MSASEGMENTATIONPROCESSGUI('CALLBACK',hObject,eventData,handles,...) calls the local
-%      function named CALLBACK in MSASEGMENTATIONPROCESSGUI.M with the given input arguments.
+%      MSASEGMENTATIONPROCESSGUI('Property','Value',...) creates a new MSASEGMENTATIONPROCESSGUI using the
+%      given property value pairs. Unrecognized properties are passed via
+%      varargin to msaSegmentationProcessGUI_OpeningFcn.  This calling syntax produces a
+%      warning when there is an existing singleton*.
 %
-%      MSASEGMENTATIONPROCESSGUI('Property','Value',...) creates a new MSASEGMENTATIONPROCESSGUI or raises the
-%      existing singleton*.  Starting from the left, property value pairs are
-%      applied to the GUI before msaSegmentationProcessGUI_OpeningFcn gets called.  An
-%      unrecognized property name or invalid value makes property application
-%      stop.  All inputs are passed to msaSegmentationProcessGUI_OpeningFcn via varargin.
+%      MSASEGMENTATIONPROCESSGUI('CALLBACK') and MSASEGMENTATIONPROCESSGUI('CALLBACK',hObject,...) call the
+%      local function named CALLBACK in MSASEGMENTATIONPROCESSGUI.M with the given input
+%      arguments.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
 %      instance to run (singleton)".
@@ -41,7 +41,7 @@ function varargout = msaSegmentationProcessGUI(varargin)
 
 % Edit the above text to modify the response to help msaSegmentationProcessGUI
 
-% Last Modified by GUIDE v2.5 22-Sep-2017 15:39:28
+% Last Modified by GUIDE v2.5 18-Aug-2021 14:49:29
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -49,10 +49,10 @@ gui_State = struct('gui_Name',       mfilename, ...
                    'gui_Singleton',  gui_Singleton, ...
                    'gui_OpeningFcn', @msaSegmentationProcessGUI_OpeningFcn, ...
                    'gui_OutputFcn',  @msaSegmentationProcessGUI_OutputFcn, ...
-                   'gui_LayoutFcn',  [] , ...
+                   'gui_LayoutFcn',  [], ...
                    'gui_Callback',   []);
 if nargin && ischar(varargin{1})
-    gui_State.gui_Callback = str2func(varargin{1});
+   gui_State.gui_Callback = str2func(varargin{1});
 end
 
 if nargout
@@ -76,9 +76,6 @@ funParams = userData.crtProc.funParams_;
 
 
 % set GUI with Parameters
-% MSA type
-handles.type_menu.String = {'middle','tight','minmax'};
-handles.type_menu.Value = find(ismember(funParams.type, handles.type_menu.String));
 
 if funParams.tightness == -1
     handles.tightness_checkbox.Value = 0;
@@ -90,7 +87,32 @@ elseif funParams.tightness <=1 && funParams.tightness >= 0
     handles.tightness_slider.Value = funParams.tightness;
 end
 handles.tightness_display.String = num2str(handles.tightness_slider.Value);
-handles.stat_diagnostics_checkbox.Value = funParams.diagnostics;
+
+
+set(handles.edit_ObjectNumber, 'String',num2str(funParams.ObjectNumber))
+set(handles.edit_finalRefinementRadius, 'String',num2str(funParams.finalRefinementRadius))
+
+% set GUI with popupmenu_ProcessIndex
+sumChanProc =  cellfun(@(x) isa(x,'GenerateSummationChannelProcess'),userData.MD.processes_);
+sumChanProcID=find(sumChanProc);
+sumChanProcNames = cellfun(@(x) x.getName(),userData.MD.processes_(sumChanProc),'Unif',false);
+sumChanProcString = vertcat('Choose later',sumChanProcNames(:));
+sumChanProcData=horzcat({[]},num2cell(sumChanProcID));
+sumChanProcValue = find(cellfun(@(x) isequal(x,funParams.ProcessIndex),sumChanProcData));
+if isempty(sumChanProcValue), sumChanProcValue = 1; end
+set(handles.popupmenu_ProcessIndex,'String',sumChanProcString,...
+    'UserData',sumChanProcData,'Value',sumChanProcValue);
+
+% Update channels listboxes depending on the selected process
+popupmenu_ProcessIndex_Callback(hObject, eventdata, handles)
+
+if funParams.useSummationChannel == 1
+    handles.text_GenerateSummationChannelProcess.Enable = 'on';
+    handles.popupmenu_ProcessIndex.Enable = 'on';
+elseif funParams.useSummationChannel == 0
+    handles.text_GenerateSummationChannelProcess.Enable = 'off';
+    handles.popupmenu_ProcessIndex.Enable = 'off';
+end
 
 % Update user data and GUI data
 handles.output = hObject;
@@ -99,7 +121,7 @@ guidata(hObject, handles);
 
 
 % --- Outputs from this function are returned to the command line.
-function varargout = msaSegmentationProcessGUI_OutputFcn(hObject, eventdata, handles) 
+function varargout = msaSegmentationProcessGUI_OutputFcn(hObject, eventdata, handles)
 % varargout  cell array for returning output args (see VARARGOUT);
 % hObject    handle to figure
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -108,6 +130,31 @@ function varargout = msaSegmentationProcessGUI_OutputFcn(hObject, eventdata, han
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+
+% --- Executes during object deletion, before destroying properties.
+function figure1_DeleteFcn(hObject, eventdata, handles)
+userData = get(handles.figure1, 'UserData');
+if isempty(userData), userData = struct(); end
+
+if isfield(userData, 'helpFig') && ishandle(userData.helpFig)
+   delete(userData.helpFig) 
+end
+
+set(handles.figure1, 'UserData', userData);
+guidata(hObject,handles);
+
+
+% --- Executes on key press with focus on figure1 and none of its controls.
+function figure1_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to figure1 (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.FIGURE)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+if strcmp(eventdata.Key, 'return')
+    pushbutton_done_Callback(handles.pushbutton_done, [], handles);
+end
 
 % --- Executes on button press in pushbutton_cancel.
 function pushbutton_cancel_Callback(hObject, eventdata, handles)
@@ -127,6 +174,18 @@ if isempty(get(handles.listbox_selectedChannels, 'String'))
     return;
 end
 
+if isnan(str2double(get(handles.edit_ObjectNumber, 'String'))) ...
+    || str2double(get(handles.edit_ObjectNumber, 'String')) < 0
+  errordlg('Please provide a valid input for ''Objec Number''.','Setting Error','modal');
+  return;
+end
+
+if isnan(str2double(get(handles.edit_finalRefinementRadius, 'String'))) ...
+    || str2double(get(handles.edit_finalRefinementRadius, 'String')) < 0
+  errordlg('Please provide a valid input for ''Final Refinement Radius''.','Setting Error','modal');
+  return;
+end
+
 %  Process Sanity check ( only check underlying data )
 userData = get(handles.figure1, 'UserData');
 if isempty(userData), userData = struct(); end
@@ -141,48 +200,32 @@ end
 % Retrieve GUI-defined parameters
 channelIndex = get(handles.listbox_selectedChannels, 'Userdata');
 funParams.ChannelIndex = channelIndex;
-funParams.type = handles.type_menu.String(handles.type_menu.Value);
+
+funParams.ObjectNumber = str2double(get(handles.edit_ObjectNumber, 'String'));
+funParams.finalRefinementRadius = str2double(get(handles.edit_finalRefinementRadius, 'String'));
+
 if handles.tightness_checkbox.Value == 1
     funParams.tightness = handles.tightness_slider.Value;
 else
     funParams.tightness = -1;
 end
-funParams.diagnostics = logical(handles.stat_diagnostics_checkbox.Value);
 
+% Retrieve GenerateSummationChannelProcess index
+if handles.checkbox_useSummationChannel.Value == 1
+  funParams.useSummationChannel = 1;
+  props=get(handles.popupmenu_ProcessIndex,{'UserData','Value'});
+  funParams.ProcessIndex = props{1}{props{2}};
+else 
+  funParams.useSummationChannel = 0;
+end
 
 % Set parameters and update main window
 processGUI_ApplyFcn(hObject, eventdata, handles,funParams);
 
-% --- Executes during object deletion, before destroying properties.
-function figure1_DeleteFcn(hObject, eventdata, handles)
-userData = get(handles.figure1, 'UserData');
-if isempty(userData), userData = struct(); end
-
-if isfield(userData, 'helpFig') && ishandle(userData.helpFig)
-   delete(userData.helpFig) 
-end
-
-set(handles.figure1, 'UserData', userData);
-guidata(hObject,handles);
-
-
-% --- Executes on key press with focus on figure1 and none of its controls.
-function figure1_KeyPressFcn(hObject, eventdata, handles)
-% hObject    handle to figure1 (see GCBO)
-% eventdata  structure with the following fields (see FIGURE)
-%	Key: name of the key that was pressed, in lower case
-%	Character: character interpretation of the key(s) that was pressed
-%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
-% handles    structure with handles and user data (see GUIDATA)
-if strcmp(eventdata.Key, 'return')
-    pushbutton_done_Callback(handles.pushbutton_done, [], handles);
-end
-
-
 % --- Executes on key press with focus on pushbutton_done and none of its controls.
 function pushbutton_done_KeyPressFcn(hObject, eventdata, handles)
 % hObject    handle to pushbutton_done (see GCBO)
-% eventdata  structure with the following fields (see UICONTROL)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
 %	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
@@ -191,37 +234,78 @@ if strcmp(eventdata.Key, 'return')
     pushbutton_done_Callback(handles.pushbutton_done, [], handles);
 end
 
-
-% --- Executes on button press in stat_diagnostics_checkbox.
-function stat_diagnostics_checkbox_Callback(hObject, eventdata, handles)
-% hObject    handle to stat_diagnostics_checkbox (see GCBO)
+% --- Executes on button press in tightness_checkbox.
+function checkbox_useSummationChannel_Callback(hObject, eventdata, handles)
+% hObject    handle to tightness_checkbox (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of stat_diagnostics_checkbox
-
-
-% --- Executes on selection change in type_menu.
-function type_menu_Callback(hObject, eventdata, handles)
-% hObject    handle to type_menu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: contents = cellstr(get(hObject,'String')) returns type_menu contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from type_menu
-
-
-% --- Executes during object creation, after setting all properties.
-function type_menu_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to type_menu (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
-
-% Hint: popupmenu controls usually have a white background on Windows.
-%       See ISPC and COMPUTER.
-if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
-    set(hObject,'BackgroundColor','white');
+% Hint: get(hObject,'Value') returns toggle state of tightness_checkbox
+if handles.checkbox_useSummationChannel.Value == 0
+    handles.text_GenerateSummationChannelProcess.Enable = 'off';
+    handles.popupmenu_ProcessIndex.Enable = 'off';
+else
+    handles.text_GenerateSummationChannelProcess.Enable = 'on';
+    handles.popupmenu_ProcessIndex.Enable = 'on';
 end
+
+% --- Executes on button press in tightness_checkbox.
+function tightness_checkbox_Callback(hObject, eventdata, handles)
+% hObject    handle to tightness_checkbox (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of tightness_checkbox
+if handles.tightness_checkbox.Value == 0
+    handles.tightness_panel.Visible = 'off';
+    handles.tightness_display.String = num2str(-1);
+else
+    handles.tightness_panel.Visible = 'on';
+    handles.tightness_display.String = num2str(handles.tightness_slider.Value);
+end
+
+% --- Executes on selection change in popupmenu_ProcessIndex.
+function popupmenu_ProcessIndex_Callback(hObject, eventdata, handles)
+% Retrieve selected process ID
+props= get(handles.popupmenu_ProcessIndex,{'UserData','Value'});
+procID = props{1}{props{2}};
+
+% Read process and check available channels
+userData = get(handles.figure1, 'UserData');
+if isempty(userData), userData = struct(); end
+if isempty(procID)
+    allChannelIndex=1:numel(userData.MD.channels_);
+else
+    allChannelIndex = find(userData.MD.processes_{procID}.checkChannelOutput);
+end
+
+% Set up available channels listbox
+if ~isempty(allChannelIndex)
+    if isempty(procID)
+        channelString = userData.MD.getChannelPaths(allChannelIndex);
+    else
+        channelString = userData.MD.processes_{procID}.outFilePaths_(1,allChannelIndex);
+    end
+else
+    channelString = {};
+end
+set(handles.listbox_availableChannels,'String',channelString,'UserData',allChannelIndex);
+
+% Set up selected channels listbox
+channelIndex = get(handles.listbox_selectedChannels, 'UserData');
+channelIndex = intersect(channelIndex,allChannelIndex);
+if ~isempty(channelIndex)
+    if isempty(procID)
+        channelString = userData.MD.getChannelPaths(channelIndex);
+    else
+        channelString = userData.MD.processes_{procID}.outFilePaths_(1,channelIndex);
+    end
+else
+    channelString = {};
+end
+set(handles.listbox_selectedChannels,'String',channelString,'UserData',channelIndex);
+
+
 
 
 % --- Executes on slider movement.
@@ -247,19 +331,3 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
 end
 handles.tightness_slider.Value = .5;
 
-% --- Executes on button press in tightness_checkbox.
-function tightness_checkbox_Callback(hObject, eventdata, handles)
-% hObject    handle to tightness_checkbox (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hint: get(hObject,'Value') returns toggle state of tightness_checkbox
-if handles.tightness_checkbox.Value == 0
-    handles.tightness_panel.Visible = 'off';
-    handles.tightness_display.String = num2str(-1);
-else
-    handles.tightness_panel.Visible = 'on';
-    handles.tightness_display.String = num2str(handles.tightness_slider.Value);
-end
-
-    

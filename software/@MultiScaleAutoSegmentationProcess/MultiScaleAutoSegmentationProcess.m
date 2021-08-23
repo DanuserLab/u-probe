@@ -1,7 +1,7 @@
 classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
     % A concrete process multi-scale automatic segmentation
     % Segment a single cell image by combining segmentations.
-    % see multiScaleAutoSeg.m
+    % see multiScaleAutoSeg_multiObject.m
 %
 % Copyright (C) 2021, Danuser Lab - UTSouthwestern 
 %
@@ -23,6 +23,10 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
 % 
     
     % Andrew R. Jamieson - Sep 2017
+
+    % Replace wrapper fcn from multiScaleAutoSeg to multiScaleAutoSeg_multiObject
+    % as per Jungsik's request to reflect new algorithm in MSA_Seg_multiObject_imDir
+    % Qiongjing (Jenny) Zou, Aug 2021
     
     methods
         function obj = MultiScaleAutoSegmentationProcess(owner,varargin)
@@ -42,7 +46,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
                 % Define arguments for superclass constructor
                 super_args{1} = owner;
                 super_args{2} = MultiScaleAutoSegmentationProcess.getName;
-                super_args{3} = @multiScaleAutoSeg;
+                super_args{3} = @multiScaleAutoSeg_multiObject;
                 if isempty(funParams)
                     funParams=MultiScaleAutoSegmentationProcess.getDefaultParams(owner,outputDir);
                 end
@@ -73,10 +77,23 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
             funParams.ChannelIndex = 1:numel(owner.channels_);
             funParams.OutputDirectory = [outputDir  filesep 'MultiScaleAutoSeg_Masks'];
             funParams.ProcessIndex = []; %Default is to use raw images
-            funParams.tightness = .5; 
-            funParams.type = 'middle';
-            funParams.diagnostics = false;
+            funParams.tightness = .5; % thresholding
+            funParams.ObjectNumber = 1;
+            funParams.finalRefinementRadius = 3;
 
+            funParams.useSummationChannel = 0; % if true, then do msa seg on the output of summation channel.
+
+            %% extra parameters not on GUI:
+            % funParams.numVotes = []; % another way to set thresholding, not used in wrapper fcn!
+            funParams.imagesOut = 1;
+            funParams.figVisible = 'on';
+            funParams.MinimumSize = 10; % unit is pixel
+
+
+
+        %% Parameters for old wrapper fcn:
+            % funParams.type = 'middle';
+            % funParams.diagnostics = false;
             %% extra parameters?
             % sigmas = [0 0.66 1 1.66 2.5 4];  % unit: pixel (common scales for xxx by xxx size confocal images)
             % p.MinimumSize = 100;        
