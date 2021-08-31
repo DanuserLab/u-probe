@@ -114,14 +114,25 @@ thisProc.setOutFilePaths(outFilePaths);
 
 %% Algorithm
 % see MSA_Seg_multiObject_imDir.m
+% Edit to make it work for all MD.Reader, such as BioFormatsReader. Before, the algorithm only works for TiffSeriesReader.
 
 tic
 
 for k = p.ChannelIndex
-    inputImgDir = inFilePaths{1,k};
     masksOutDir = outFilePaths{1,k};
+
+    imFileNamesF = movieData.getImageFileNames(k);
+    imFileNames = imFileNamesF{1};
     
-    MSA_Seg_multiObject_imDir_2(inputImgDir, p.OutputDirectory, masksOutDir, k, 'tightness', currTightness, ...
+    I = cell(movieData.nFrames_, 1);
+    imgStack = [];
+    for fr = 1: movieData.nFrames_
+        I{fr} = movieData.channels_(k).loadImage(fr); % this is the way to read image for all MD.Reader
+        imgStack = cat(3, imgStack, I{fr});
+        fprintf(1, '%g ', fr);
+    end
+
+    MSA_Seg_multiObject_imDir_2(I, imgStack, imFileNames, movieData.nFrames_, p.OutputDirectory, masksOutDir, k, 'tightness', currTightness, ...
         'ObjectNumber', currObjectNumber, 'finalRefinementRadius', currFinalRefinementRadius, ...
         'imagesOut', currImagesOut, 'figVisible', currFigVisible, 'MinimumSize', currMinimumSize)
     
@@ -137,8 +148,9 @@ disp('==:) close all')
 end % end of wrapper fcn
 
 
-function MSA_Seg_multiObject_imDir_2(inputImgDir, outputDir, masksOutDir, iChan, varargin)
+function MSA_Seg_multiObject_imDir_2(I, imgStack, fileNames, frmax, outputDir, masksOutDir, iChan, varargin)
 % local function modified from MSA_Seg_multiObject_imDir with additional input arguments, masksOutDir and iChan
+% Also, deleted input argument, inputImgDir, and added I, imgStack, fileNames, frmax.
 ip = inputParser;
 ip.addParameter('tightness', 0.5, @(x) isnumeric(x) && (x==-1 || x >= 0 || x<=1));
 ip.addParameter('numVotes', -1);
@@ -162,21 +174,23 @@ if ~isdir(masksOutDir); mkdir(masksOutDir); end
 pString = 'MSA_mask_';      %Prefix for saving masks to file
 
 
+% Comment out, below method does not work for BioFormats reader, used im = MD.channels_(chIdx).loadImage(frameIdx); see above.
+% Qiongjing (Jenny) Zou, Aug 2021
 %% Load images
 
-fileReads = dir(inputImgDir);
-ind = arrayfun(@(x) (x.isdir == 0), fileReads);
+% fileReads = dir(inputImgDir);
+% ind = arrayfun(@(x) (x.isdir == 0), fileReads);
 
-fileNames = {fileReads(ind).name};
-frmax = numel(fileNames);
+% fileNames = {fileReads(ind).name}; % TODO 
+% frmax = numel(fileNames);
 
-I = cell(frmax, 1);
-imgStack = [];
-for fr = 1:frmax
-    I{fr} = imread(fullfile(inputImgDir, fileNames{fr}));
-    imgStack = cat(3, imgStack, I{fr});
-    fprintf(1, '%g ', fr);
-end
+% I = cell(frmax, 1);
+% imgStack = [];
+% for fr = 1:frmax
+%     I{fr} = imread(fullfile(inputImgDir, fileNames{fr}));
+%     imgStack = cat(3, imgStack, I{fr});
+%     fprintf(1, '%g ', fr);
+% end
 
 
 %% TS of 5 numbers
