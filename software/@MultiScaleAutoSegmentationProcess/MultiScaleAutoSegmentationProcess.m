@@ -3,7 +3,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
     % Segment a single cell image by combining segmentations.
     % see multiScaleAutoSeg_multiObject.m
 %
-% Copyright (C) 2021, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
