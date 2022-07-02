@@ -150,7 +150,11 @@ if isempty(iDarkProc)
     warning('biosensors:shadeCorr:noDKCorr',...
         'This movie has not been dark-current corrected yet! It is recommended that you run dark-current correction before shade correction!')    
     %If no dark-current correction, then use raw images.
-    movieData.processes_{iProc}.setInImagePath(p.ChannelIndex,movieData.getChannelPaths(p.ChannelIndex));
+    % Edit below 4 lines, b/c it fails with BioFormats raw images. Anyway, the raw images were not used in this process. -- Qiongjing (Jenny) Zou, July 2022
+    % movieData.processes_{iProc}.setInImagePath(p.ChannelIndex,movieData.getChannelPaths(p.ChannelIndex));
+    for i = p.ChannelIndex
+        movieData.processes_{iProc}.setInImagePath(i,movieData.channels_(i).channelPath_);
+    end
     hasDarkCorr = false(1,nChanCorr);
     
 else    
