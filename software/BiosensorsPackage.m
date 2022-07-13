@@ -258,7 +258,7 @@ classdef BiosensorsPackage < Package
             
             m = [0 0 0 0 0 0 0 0 0 0 0;  %1  DarkCurrentCorrectionProcess
                  2 0 0 0 0 0 0 0 0 0 0;  %2  ShadeCorrectionProcess
-                 0 1 0 0 0 0 0 0 0 0 0;  %3  SegmentationProcess
+                 0 2 0 0 0 0 0 0 0 0 0;  %3  SegmentationProcess % Change step 3 from dependent to optional to step 2, so first 2 procs can be skipped. Qiongjing (Jenny) Zou, July 2022
                  0 0 1 0 0 0 0 0 0 0 0;  %4  BackgroundMasksProcess
                  0 0 1 0 0 0 0 0 0 0 0;  %5  MaskRefinementProcess
                  0 1 0 1 0 0 0 0 0 0 0;  %6  BackgroundSubtractionProcess
