@@ -1,7 +1,10 @@
-# Biosensor Processing 2.1
+# Biosensor Processing 3.1
 ![Alt Text](img/biosensorpkg.jpg?raw=true)
 
 This MATLAB software package allows processing of raw ratiometric biosensor images (for example based on FRET) into fully corrected "ratio maps" or "activation maps" — images showing the localized activation of the biosensor. This includes application of all necessary image corrections needed for quantitative widefield imaging of ratiometric biosensors.
+
+New in Version 3.1:
+- Added a step to crop a ROI for segementation and its following steps.
 
 New in Version 2.1:
 - Added support for movie relocation
