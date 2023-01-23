@@ -20,7 +20,7 @@ function varargout = thresholdProcessGUI(varargin)
 %
 % See also: GUIDE, GUIDATA, GUIHANDLES
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -81,6 +81,9 @@ channelIndex = funParams.ChannelIndex;
 
 % Find any parent process
 userData.parentProc = userData.crtPackage.getParent(userData.procID);
+if numel(userData.parentProc) > 1
+    userData.parentProc = userData.parentProc(end); % use last parentProc as parentProc
+end
 if isempty(userData.crtPackage.processes_{userData.procID}) && ~isempty(userData.parentProc)
     % Check existence of all parent processes
     emptyParentProc = any(cellfun(@isempty,userData.crtPackage.processes_(userData.parentProc)));
@@ -93,6 +96,7 @@ if isempty(userData.crtPackage.processes_{userData.procID}) && ~isempty(userData
     end
    
 end
+
 
 if ~isempty(channelIndex)
     channelString = userData.MD.getChannelPaths(channelIndex);

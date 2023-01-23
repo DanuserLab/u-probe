@@ -65,7 +65,7 @@ function movieData = backgroundSubtractMovie(movieData,paramsIn)
 % Revamped 5/2010
 %
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -139,8 +139,14 @@ end
 
 %Find the background mask creation process, and the shade correction
 %process, as this should have already been performed.
-iBMProc = find(cellfun(@(x)(isa(x,'BackgroundMasksProcess')),movieData.processes_),1);                          
-iSCProc = find(cellfun(@(x)(isa(x,'ShadeCorrectionProcess')),movieData.processes_),1);                          
+% if CropShadeCorrectROIProcess is performed, use its output as the output of ShadeCorrectionProcess - Qiongjing (Jenny) Zou, Nov 2022
+iBMProc = find(cellfun(@(x)(isa(x,'BackgroundMasksProcess')),movieData.processes_),1);   
+iCSCRProc = find(cellfun(@(x)(isa(x,'CropShadeCorrectROIProcess')),movieData.processes_),1);    
+if isempty(iCSCRProc)                       
+    iSCProc = find(cellfun(@(x)(isa(x,'ShadeCorrectionProcess')),movieData.processes_),1);
+else
+    iSCProc = iCSCRProc;
+end
 
 nChanCorr = length(p.ChannelIndex);
 

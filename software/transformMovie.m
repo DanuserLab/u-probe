@@ -78,7 +78,7 @@ function movieData = transformMovie(movieData,paramsIn)
 % Revamped 5/2010
 %
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -200,8 +200,15 @@ xForms = transfProc.getTransformation(p.ChannelIndex);
 
 %Get original image size. Image pixels that are transformed out of this
 %area will be omitted to preserve this size
-n = movieData.imSize_(1);
-m = movieData.imSize_(2);
+if ~isempty(iBSProc) % make it work for cropped images
+    dinfo = dir(inDir);
+    imInfo = imfinfo(fullfile(dinfo(end).folder,dinfo(end).name));
+    n = imInfo.Height;
+    m = imInfo.Width;
+else
+    n = movieData.imSize_(1);
+    m = movieData.imSize_(2);
+end
 nFrames = movieData.nFrames_;
 nPlanes = movieData.zSize_;
 if isempty(nPlanes)

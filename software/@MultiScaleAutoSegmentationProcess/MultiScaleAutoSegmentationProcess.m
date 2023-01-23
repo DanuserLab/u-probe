@@ -3,7 +3,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
     % Segment a single cell image by combining segmentations.
     % see multiScaleAutoSeg_multiObject.m
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -76,7 +76,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
             % Set default parameters
             funParams.ChannelIndex = 1:numel(owner.channels_);
             funParams.OutputDirectory = [outputDir  filesep 'MultiScaleAutoSeg_Masks'];
-            funParams.ProcessIndex = []; %Default is to use raw images
+            funParams.ProcessIndex = []; %Default is to use raw images % this will be auto-set to ShadeCorrectionProcess or CropShadeCorrectROIProcess in BiosensorsPackage, see sanityCheck in BiosensorsPackage.
             funParams.tightness = .5; % thresholding
             funParams.ObjectNumber = 1;
             funParams.finalRefinementRadius = 3;

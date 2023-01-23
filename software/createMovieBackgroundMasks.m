@@ -69,7 +69,7 @@ function movieData = createMovieBackgroundMasks(movieDataOrProcess,paramsIn)
 %
 %% ----- Parameters ----- %%
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -250,7 +250,7 @@ for iChan = 1:nChanBack
         
         %Write it to file        
         imwrite(backgroundMask,[currBkgrndMaskDir filesep ...
-            pString maskFileNames{iChan}{iMask}]);
+            pString maskFileNames{iChan}{iMask}], 'Compression','none'); % fixed issue of ImageJ cannot open compressed mask. - Qiongjing (Jenny) Zou, Jan 2023
 
         if ~p.BatchMode && mod(iMask,5)
             %Update the waitbar occasionally to minimize slowdown

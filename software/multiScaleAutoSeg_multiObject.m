@@ -21,7 +21,7 @@ function multiScaleAutoSeg_multiObject(movieDataOrProcess, varargin)
 %
 % Qiongjing (Jenny) Zou, Aug 2021
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -59,7 +59,7 @@ currTightness = p.tightness;
 currObjectNumber = p.ObjectNumber;
 currFinalRefinementRadius = p.finalRefinementRadius;
 currUseSummationChannel = p.useSummationChannel;
-currProcessIndex = p.ProcessIndex;
+currProcessIndex = p.ProcessIndex; % the index of using which previous proc's output as input of thisProc
 % below params not on GUI:
 currImagesOut = p.imagesOut;
 currFigVisible = p.figVisible;
@@ -74,10 +74,8 @@ end
 % precondition / error checking
 if isequal(currUseSummationChannel, 1)
     if isempty(currProcessIndex)
-        iSumChanProc = movieData.getProcessIndex('GenerateSummationChannelProcess',1,true); % nDesired = 1 ; askUser = true
-    elseif isa(movieData.processes_{currProcessIndex},'GenerateSummationChannelProcess')
-        iSumChanProc = currProcessIndex;
-    else
+        currProcessIndex = movieData.getProcessIndex('GenerateSummationChannelProcess',1,true); % nDesired = 1 ; askUser = true
+    elseif ~isa(movieData.processes_{currProcessIndex},'GenerateSummationChannelProcess')
         error('The process specified by ProcessIndex is not a valid GenerateSummationChannelProcess! Check input!')
     end
 end
@@ -86,9 +84,7 @@ end
 % Set up the input directories (input images)
 inFilePaths = cell(1, numel(movieData.channels_));
 for i = p.ChannelIndex
-    if isequal(currUseSummationChannel, 1)
-        inFilePaths{1,i} = movieData.processes_{iSumChanProc}.outFilePaths_{1,i};
-    elseif isempty(currProcessIndex)
+    if isempty(currProcessIndex)
         inFilePaths{1,i} = movieData.getChannelPaths{i};
     else
         inFilePaths{1,i} = movieData.processes_{currProcessIndex}.outFilePaths_{1,i};
@@ -115,19 +111,30 @@ thisProc.setOutFilePaths(outFilePaths);
 %% Algorithm
 % see MSA_Seg_multiObject_imDir.m
 % Edit to make it work for all MD.Reader, such as BioFormatsReader. Before, the algorithm only works for TiffSeriesReader.
+% Edit again to make it also work when input is from output of a previous process. - Qiongjing (Jenny) Zou, Nov 2022
 
 tic
 
 for k = p.ChannelIndex
     masksOutDir = outFilePaths{1,k};
-
-    imFileNamesF = movieData.getImageFileNames(k);
-    imFileNames = imFileNamesF{1};
+    
+    if isempty(currProcessIndex)
+        imFileNamesF = movieData.getImageFileNames(k);
+        imFileNames = imFileNamesF{1};
+    else
+        fileReads = dir(inFilePaths{1,k});
+        ind = arrayfun(@(x) (x.isdir == 0), fileReads);
+        imFileNames = {fileReads(ind).name}';
+    end
     
     I = cell(movieData.nFrames_, 1);
     imgStack = [];
     for fr = 1: movieData.nFrames_
-        I{fr} = movieData.channels_(k).loadImage(fr); % this is the way to read image for all MD.Reader
+        if isempty(currProcessIndex)
+            I{fr} = movieData.channels_(k).loadImage(fr); % this is the way to read image for all MD.Reader, when input is raw images.
+        else
+            I{fr} = imread([inFilePaths{1,k} filesep imFileNames{fr}]); % this is the way to read image from output of a previous process.
+        end
         imgStack = cat(3, imgStack, I{fr});
         fprintf(1, '%g ', fr);
     end

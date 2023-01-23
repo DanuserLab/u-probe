@@ -84,7 +84,7 @@ function movieData = shadeCorrectMovie(movieData,paramsIn)
 % Revamped 5/2010
 %
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -150,7 +150,7 @@ if isempty(iDarkProc)
     warning('biosensors:shadeCorr:noDKCorr',...
         'This movie has not been dark-current corrected yet! It is recommended that you run dark-current correction before shade correction!')    
     %If no dark-current correction, then use raw images.
-    % Edit below 4 lines, b/c it fails with BioFormats raw images. Anyway, the raw images were not used in this process. -- Qiongjing (Jenny) Zou, July 2022
+    % Edit below 4 lines, b/c it fails with BioFormats raw images. -- Qiongjing (Jenny) Zou, July 2022
     % movieData.processes_{iProc}.setInImagePath(p.ChannelIndex,movieData.getChannelPaths(p.ChannelIndex));
     for i = p.ChannelIndex
         movieData.processes_{iProc}.setInImagePath(i,movieData.channels_(i).channelPath_);

@@ -93,7 +93,7 @@ function movieData = thresholdMovie(movieDataOrProcess,paramsIn)
 %
 %% ----- Parameters ----- %%
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -355,9 +355,9 @@ for iChan = 1:nChanThresh
     
         %write the mask to file
         if(p.SingleFile)
-            imwrite(imageMask,[maskDirs{iChan} filesep pString imageFileNames{iChan}{1}],'WriteMode','append');
+            imwrite(imageMask,[maskDirs{iChan} filesep pString imageFileNames{iChan}{1}],'WriteMode','append', 'Compression','none'); % fixed issue of ImageJ cannot open compressed mask. - Qiongjing (Jenny) Zou, Jan 2023
         else
-            imwrite(imageMask,[maskDirs{iChan} filesep pString imageFileNames{iChan}{iImage}]);
+            imwrite(imageMask,[maskDirs{iChan} filesep pString imageFileNames{iChan}{iImage}], 'Compression','none'); % fixed issue of ImageJ cannot open compressed mask. - Qiongjing (Jenny) Zou, Jan 2023
         end
         
         if ishandle(wtBar) && mod(iImage,5)

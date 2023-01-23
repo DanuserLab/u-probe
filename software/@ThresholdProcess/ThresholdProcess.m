@@ -2,7 +2,7 @@ classdef ThresholdProcess < SegmentationProcess & NonSingularProcess
     %A function-specific process for segmenting via thresholding using
     %thresholdMovie.m
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -125,7 +125,7 @@ classdef ThresholdProcess < SegmentationProcess & NonSingularProcess
                 % Number mask directories by expected process index
                 funParams.OutputDirectory = [outputDir  filesep 'masks' num2str(length(owner.processes_)+1)];
             end
-            funParams.ProcessIndex = [];%Default is to use raw images
+            funParams.ProcessIndex = [];%Default is to use raw images % this will be auto-set to ShadeCorrectionProcess or CropShadeCorrectROIProcess in BiosensorsPackage, see sanityCheck in BiosensorsPackage.
             funParams.PreThreshold = false; % use fixed threshold before automatic threshold
             funParams.ThresholdValue = []; % automatic threshold selection
             funParams.IsPercentile = []; % use percentile rather than absolute

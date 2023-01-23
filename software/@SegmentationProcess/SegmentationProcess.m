@@ -1,7 +1,7 @@
 classdef SegmentationProcess < MaskProcess
     % An abstract superclass of all segmentation processes
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -59,7 +59,6 @@ classdef SegmentationProcess < MaskProcess
                  @MultiScaleAutoSegmentationProcess
                  @ThresholdProcess3D;
                  @ExternalSegmentationProcess;
-                 @NucSegProcess;
                 };
             procClasses = cellfun(@func2str, procClasses, 'Unif', 0);
         end

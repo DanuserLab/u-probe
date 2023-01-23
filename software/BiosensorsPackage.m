@@ -1,7 +1,7 @@
 classdef BiosensorsPackage < Package
     % A concrete process for Biosensor Package
 %
-% Copyright (C) 2022, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -42,6 +42,7 @@ classdef BiosensorsPackage < Package
         end
         
         function [status processExceptions] = sanityCheck(obj,varargin) % throws Exception Cell Array
+            % Since a new 3rd process CropShadeCorrectROIProcess is added in Nov 2022, all hard coded index after process >=3 are updated +1. by Qiongjing (Jenny) Zou, Nov 2022
             nProcesses = length(obj.getProcessClassNames);
             
             ip = inputParser;
@@ -63,16 +64,16 @@ classdef BiosensorsPackage < Package
                 parentIndex = obj.getParent(i);
                 if length(parentIndex) > 1
                     switch i
-                        case 6
+                        case 7 %6
                             parentIndex = 2;
-                        case 7
-                            parentIndex = 6;
-                        case 8
-                            parentIndex = 6;
-                        case 9
-                            parentIndex = 6;
-                        case 11
-                            parentIndex = 9;
+                        case 8 %7
+                            parentIndex = 7; %6;
+                        case 9 %8
+                            parentIndex = 7; %6;
+                        case 10 %9
+                            parentIndex = 7; %6;
+                        case 12 %1111
+                            parentIndex = 10; %9;
                         otherwise
                             parentIndex = parentIndex(1);
                     end
@@ -103,20 +104,20 @@ classdef BiosensorsPackage < Package
                 end
                 
                 % Check the validity of mask channels in Background
-                % Subtraction Process (step 6 in biosensors package)
-                if i == 6 &&  ~isempty(obj.processes_{4})
+                % Subtraction Process (step 7 in biosensors package)
+                if i == 7 &&  ~isempty(obj.processes_{5})
                     tmp = setdiff(obj.processes_{i}.funParams_.MaskChannelIndex, ...
-                        union(obj.processes_{4}.funParams_.ChannelIndex,...
-                        find(obj.processes_{4}.checkChannelOutput)));
+                        union(obj.processes_{5}.funParams_.ChannelIndex,...
+                        find(obj.processes_{5}.checkChannelOutput)));
                     
                     if  ~isempty(tmp)
                         if length(tmp) ==1
                             ME = MException('lccb:input:fatal',...
-                                'The mask channel ''%s'' is not included in step 4 (Background Mask Creation). Please include this channel in step 4 or change to another channel that has mask.',...
+                                'The mask channel ''%s'' is not included in step 5 (Background Mask Creation). Please include this channel in step 5 or change to another channel that has mask.',...
                                 obj.owner_.channels_(tmp).channelPath_);
                         else
                             ME = MException('lccb:input:fatal',...
-                                'More than one mask channels are not included in step 4 (Background Mask Creation). Please include these channels in step 4 or change to other channels that have masks.');
+                                'More than one mask channels are not included in step 5 (Background Mask Creation). Please include these channels in step 5 or change to other channels that have masks.');
                         end
                         %                               processExceptions{i} = horzcat(processExceptions{i}, ME);
                         processExceptions{i} = [ME, processExceptions{i}];
@@ -124,22 +125,22 @@ classdef BiosensorsPackage < Package
                 end
                 
                 % Check the validity of bleed channels in Bleedthrough
-                % Correction Process (step 8 in biosensors package)
-                if i == 8 && ~isempty(obj.processes_{6})
+                % Correction Process (step 9 in biosensors package)
+                if i == 9 && ~isempty(obj.processes_{7})
                     
-                    validChannels = union(obj.processes_{6}.funParams_.ChannelIndex,...
-                        find(obj.processes_{6}.checkChannelOutput));
+                    validChannels = union(obj.processes_{7}.funParams_.ChannelIndex,...
+                        find(obj.processes_{7}.checkChannelOutput));
                     correctionChannels = find(sum(obj.processes_{i}.funParams_.Coefficients,2)>0);
                     tmp = setdiff(correctionChannels,validChannels);
                     
                     if  ~isempty(tmp)
                         if length(tmp) ==1
                             ME = MException('lccb:input:fatal',...
-                                'The bleedthrough channel ''%s'' is not included in step 6 (Background Subtraction). Please include this channel in step 6 or change to another bleedthrough channel that is background-subtracted.',...
+                                'The bleedthrough channel ''%s'' is not included in step 7 (Background Subtraction). Please include this channel in step 7 or change to another bleedthrough channel that is background-subtracted.',...
                                 obj.owner_.channels_(tmp).channelPath_);
                         else
                             ME = MException('lccb:input:fatal',...
-                                'More than one bleedthrough channels are not included in step 6 (Background Subtraction). Please include these channels in step 6 or change to other bleedthrough channels that are background-subtracted.');
+                                'More than one bleedthrough channels are not included in step 7 (Background Subtraction). Please include these channels in step 7 or change to other bleedthrough channels that are background-subtracted.');
                         end
                         %                                 processExceptions{i} = horzcat(processExceptions{i}, ME);
                         processExceptions{i} = [ME, processExceptions{i}];
@@ -147,20 +148,20 @@ classdef BiosensorsPackage < Package
                 end
                 
                 % Check the validity of mask channesl in Ratio Process
-                % (step 9 in biosensors package)
-                if i == 9 && ~isempty(obj.processes_{3})
+                % (step 10 in biosensors package)
+                if i == 10 && ~isempty(obj.processes_{4})
                     tmp = setdiff(obj.processes_{i}.funParams_.MaskChannelIndex, ...
-                        union(obj.processes_{3}.funParams_.ChannelIndex,...
-                        find(obj.processes_{3}.checkChannelOutput)));
+                        union(obj.processes_{4}.funParams_.ChannelIndex,...
+                        find(obj.processes_{4}.checkChannelOutput)));
                     
                     if  ~isempty(tmp)
                         if length(tmp) ==1
                             ME = MException('lccb:input:fatal',...
-                                'The mask channel ''%s'' is not included in step 3 (Segmentation). Please include this channel in step 3 or change to another channel that has mask.',...
+                                'The mask channel ''%s'' is not included in step 4 (Segmentation). Please include this channel in step 4 or change to another channel that has mask.',...
                                 obj.owner_.channels_(tmp).channelPath_);
                         else
                             ME = MException('lccb:input:fatal',...
-                                'More than one mask channels are not included in step 3 (Segmentation). Please include these channels in step 3 or change to other channels that have masks.');
+                                'More than one mask channels are not included in step 4 (Segmentation). Please include these channels in step 4 or change to other channels that have masks.');
                         end
                         %                                 processExceptions{i} = horzcat(processExceptions{i}, ME);
                         processExceptions{i} = [ME, processExceptions{i}];
@@ -169,30 +170,43 @@ classdef BiosensorsPackage < Package
                 
                 % Photobleach and Output step:
                 % Check if input channel (single channel) is the numerator of ratio channel
-                if ismember(i,[10 11]) &&  ~isempty(obj.processes_{9})
-                    hasPBoutput = obj.processes_{9}.checkChannelOutput;
+                if ismember(i,[11 12]) &&  ~isempty(obj.processes_{10})
+                    hasPBoutput = obj.processes_{10}.checkChannelOutput;
                     
                     if obj.processes_{i}.funParams_.ChannelIndex ~= ...
-                            obj.processes_{9}.funParams_.ChannelIndex(1) && ...
+                            obj.processes_{10}.funParams_.ChannelIndex(1) && ...
                             ~hasPBoutput(obj.processes_{i}.funParams_.ChannelIndex )
                         
                         ME = MException('lccb:input:fatal',...
-                            'The input channel of current step must be the numerator of ratio channels. There can be multiple numerator channels generated by Ratioing step (step 9) in multiple times of processing.');
+                            'The input channel of current step must be the numerator of ratio channels. There can be multiple numerator channels generated by Ratioing step (step 10) in multiple times of processing.');
                         processExceptions{i} = [ME, processExceptions{i}];
                         
                     end
                 end
-                
-                % Set the process index of segmentationProcess
-                if i == 3 && ~isempty(obj.processes_{2})
+
+                % Set the process index of CropShadeCorrectROIProcess
+                % CropShadeCorrectROIProcess (3) is dependent on ShadeCorrectionProcess (2)
+                if i == 3 && ~isempty(obj.processes_{2})                    
                     parseProcessParams(obj.processes_{i},...
                         struct('ProcessIndex',obj.owner_.getProcessIndex(obj.processes_{2})));
                 end
                 
+                % Set the process index of segmentationProcess
+                % SegmentationProcess (4) is dependent on ShadeCorrectionProcess (2)
+                if i == 4 && ~isempty(obj.processes_{2}) && isempty(obj.processes_{3})                    
+                    parseProcessParams(obj.processes_{i},...
+                        struct('ProcessIndex',obj.owner_.getProcessIndex(obj.processes_{2})));
+                end
+                % If CropShadeCorrectROIProcess (3) run, use its output as input of SegmentationProcess (4):
+                if i == 4 && ~isempty(obj.processes_{3})                    
+                    parseProcessParams(obj.processes_{i},...
+                        struct('ProcessIndex',obj.owner_.getProcessIndex(obj.processes_{3})));
+                end
+                
                 % Set the process index of bleedthrough correction
-                if i == 8 
+                if i == 9 
                     processIndex=[];
-                    for parentProcId = [6 7]
+                    for parentProcId = [7 8]
                         parentProc= obj.processes_{parentProcId};
                         if ~isempty(parentProc)
                             processIndex=horzcat(processIndex,...
@@ -203,7 +217,7 @@ classdef BiosensorsPackage < Package
                 end                
             end
             
-            % Hard-coded, when processing processes 2,3,7,9,  add mask
+            % Hard-coded, when processing processes 2,4,8,10,  add mask
             % process to the processes' funParams_.SegProcessIndex
             %
             % If only segmentation process exists:
@@ -213,10 +227,10 @@ classdef BiosensorsPackage < Package
             %       funParams.SegProcessIndex = [MaskrefinementProcessIndex,  SegmentationProcessIndex]
             %
             
-            for i = intersect(validProc, [4 5 7 9])
-                if ~isempty(obj.processes_{3}) % Segmentation process
+            for i = intersect(validProc, [5 6 8 10])
+                if ~isempty(obj.processes_{4}) % Segmentation process
                     
-                    segPI = find(cellfun(@(x)isequal(x, obj.processes_{3}), obj.owner_.processes_));
+                    segPI = find(cellfun(@(x)isequal(x, obj.processes_{4}), obj.owner_.processes_));
                     if length(segPI) > 1
                         error('User-defined: More than one identical Threshold processes exists in movie data''s process list.')
                     end
@@ -224,8 +238,8 @@ classdef BiosensorsPackage < Package
                     
                     % If mask transformation or ratioing process, find
                     % if any mask refinement is done
-                    if i == 7 || i == 9 && ~isempty(obj.processes_{5})
-                        segPI = find(cellfun(@(x)isequal(x, obj.processes_{5}), obj.owner_.processes_));
+                    if i == 8 || i == 10 && ~isempty(obj.processes_{6})
+                        segPI = find(cellfun(@(x)isequal(x, obj.processes_{6}), obj.owner_.processes_));
                         if length(segPI) > 1
                             error('User-defined: More than one identical MaskRefinement processes exists in movie data''s process list.')
                         end
@@ -234,7 +248,7 @@ classdef BiosensorsPackage < Package
                     
                     % if ratioing process, find if there is any mask
                     % refinement process
-                    if i == 9
+                    if i == 10
                         segPI=getProcessIndex(obj.owner_,'MaskTransformationProcess',Inf,0);
                         if ~isempty(segPI)
                             funParams.SegProcessIndex = cat(2, funParams.SegProcessIndex, segPI);
@@ -256,17 +270,18 @@ classdef BiosensorsPackage < Package
         
         function m = getDependencyMatrix(i,j)
             
-            m = [0 0 0 0 0 0 0 0 0 0 0;  %1  DarkCurrentCorrectionProcess
-                 2 0 0 0 0 0 0 0 0 0 0;  %2  ShadeCorrectionProcess
-                 0 2 0 0 0 0 0 0 0 0 0;  %3  SegmentationProcess % Change step 3 from dependent to optional to step 2, so first 2 procs can be skipped. Qiongjing (Jenny) Zou, July 2022
-                 0 0 1 0 0 0 0 0 0 0 0;  %4  BackgroundMasksProcess
-                 0 0 1 0 0 0 0 0 0 0 0;  %5  MaskRefinementProcess
-                 0 1 0 1 0 0 0 0 0 0 0;  %6  BackgroundSubtractionProcess
-                 0 0 1 0 2 1 0 0 0 0 0;  %7  TransformationProcess
-                 0 0 0 0 0 1 2 0 0 0 0;  %8  BleedthroughCorrectionProcessj
-                 0 0 1 0 2 1 2 2 0 0 0;  %9  RatioProcess
-                 0 0 0 0 0 0 0 0 1 0 0;  %10 PhotobleachCorrectionProcess
-                 0 0 0 0 0 0 0 0 1 2 0]; %11 OutputRatioProcess
+            m = [0 0 0 0 0 0 0 0 0 0 0 0;  %1  DarkCurrentCorrectionProcess
+                 2 0 0 0 0 0 0 0 0 0 0 0;  %2  ShadeCorrectionProcess
+                 0 1 0 0 0 0 0 0 0 0 0 0;  %3  CropShadeCorrectROIProcess % added Nov 2022 by Qiongjing (Jenny) Zou
+                 0 1 2 0 0 0 0 0 0 0 0 0;  %4  SegmentationProcess % this step is dependent to step 2 and optional to step 3
+                 0 0 0 1 0 0 0 0 0 0 0 0;  %5  BackgroundMasksProcess
+                 0 0 0 1 0 0 0 0 0 0 0 0;  %6  MaskRefinementProcess
+                 0 1 0 0 1 0 0 0 0 0 0 0;  %7  BackgroundSubtractionProcess
+                 0 0 0 1 0 2 1 0 0 0 0 0;  %8  TransformationProcess
+                 0 0 0 0 0 0 1 2 0 0 0 0;  %9  BleedthroughCorrectionProcess
+                 0 0 0 1 0 2 1 2 2 0 0 0;  %10 RatioProcess
+                 0 0 0 0 0 0 0 0 0 1 0 0;  %11 PhotobleachCorrectionProcess
+                 0 0 0 0 0 0 0 0 0 1 2 0]; %12 OutputRatioProcess
             if nargin<2, j=1:size(m,2); end
             if nargin<1, i=1:size(m,1); end
             m=m(i,j);
@@ -280,6 +295,7 @@ classdef BiosensorsPackage < Package
             biosensorsConstr = {
                 @DarkCurrentCorrectionProcess,...
                 @ShadeCorrectionProcess,...
+                @CropShadeCorrectROIProcess,...
                 @ThresholdProcess,...
                 @BackgroundMasksProcess,...
                 @MaskRefinementProcess,...
@@ -297,6 +313,7 @@ classdef BiosensorsPackage < Package
             biosensorsClasses = {
                 'DarkCurrentCorrectionProcess',...
                 'ShadeCorrectionProcess',...
+                'CropShadeCorrectROIProcess',...
                 'SegmentationProcess',...
                 'BackgroundMasksProcess',...
                 'MaskRefinementProcess',...
