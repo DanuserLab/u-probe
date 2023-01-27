@@ -17,6 +17,6 @@ New in Version 2.1:
 For more information, please see [Hodgson et al., Curr Protoc Cell Biol. 14.11 (2010).](https://www.ncbi.nlm.nih.gov/pubmed/20235099)
 
 ----------------------
-[Danuser Lab Website](https://www.utsouthwestern.edu/labs/danuser/)
+[Danuser Lab Website](https://www.danuserlab-utsw.org/)
 
-[Software Links](https://www.utsouthwestern.edu/labs/danuser/software/)
+[Software Links](https://github.com/DanuserLab/)
