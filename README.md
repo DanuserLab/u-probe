@@ -16,6 +16,8 @@ New in Version 2.1:
 
 For more information, please see [Hodgson et al., Curr Protoc Cell Biol. 14.11 (2010).](https://www.ncbi.nlm.nih.gov/pubmed/20235099)
 
+To provide feedback to this package, please use the "Issues" tab on GitHub. Here is a general instruction on [how to create an issue on GitHub](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue).
+
 ----------------------
 [Danuser Lab Website](https://www.danuserlab-utsw.org/)
 
