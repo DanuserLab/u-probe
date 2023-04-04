@@ -84,7 +84,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
             funParams.useSummationChannel = 0; % if true, then do msa seg on the output of summation channel.
 
             %% extra parameters not on GUI:
-            % funParams.numVotes = []; % another way to set thresholding, not used in wrapper fcn!
+            funParams.numVotes = -1;
             funParams.imagesOut = 1;
             funParams.figVisible = 'on';
             funParams.MinimumSize = 10; % unit is pixel

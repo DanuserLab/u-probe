@@ -330,7 +330,7 @@ classdef BiosensorsPackage < Package
         function tools = getTools(index)
             biosensorsTools(1).name = 'Bleedthrough coefficient calculation';
             biosensorsTools(1).funHandle = @calculateBleedthroughGUI;
-            biosensorsTools(2).name = 'Alignement/Registration Transform Creation';
+            biosensorsTools(2).name = 'Alignment/Registration Transform Creation';
             biosensorsTools(2).funHandle = @transformCreationGUI;
             if nargin==0, index=1:numel(biosensorsTools); end
             tools=biosensorsTools(index);
