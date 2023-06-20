@@ -4,7 +4,7 @@
 ## Introduction
 This MATLAB software package allows processing of raw ratiometric biosensor images (for example based on FRET) into fully corrected "ratio maps" or "activation maps" — images showing the localized activation of the biosensor. This includes application of all necessary image corrections needed for quantitative widefield imaging of ratiometric biosensors.
 
-For more information, please see [Hodgson et al., Curr Protoc Cell Biol. 14.11 (2010).](https://www.ncbi.nlm.nih.gov/pubmed/20235099)
+For more information, please see [**Biosensors for characterizing the dynamics of rho family GTPases in living cells**](https://www.ncbi.nlm.nih.gov/pubmed/20235099), *Curr Protoc Cell Biol*, 2010, Chapter 14:Unit 14.11.1-26, written by Louis Hodgson, Feimo Shen, Klaus Hahn.
 
 ## Documentation
 Detailed instructions for how to download and load the biosensor package into MATLAB is provided via the [Wiki](https://github.com/DanuserLab/Biosensor/wiki/Installation) tab that is located at the top of this GitHub repository.
