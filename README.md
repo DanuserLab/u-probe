@@ -1,4 +1,10 @@
 # Biosensor Processing 3.1
+<a class="twitter-share-button"
+   href="https://twitter.com/intent/tweet?text=🚀 Check out @Danuserlab's Biosensor software package on GitHub: https://github.com/danuserlab/Biosensor"
+   data-size="large">
+  Share on Twitter
+</a>
+
 ![Alt Text](img/biosensorpkg.jpg?raw=true)
 
 ## Introduction
