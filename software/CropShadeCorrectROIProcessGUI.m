@@ -149,8 +149,8 @@ delete(handles.figure1);
 function pushbutton_done_Callback(hObject, eventdata, handles)
 
 %  Check user input --------
-if isempty(get(handles.listbox_selectedChannels, 'String')) || ~isequal(numel(get(handles.listbox_selectedChannels, 'String')), 2)
-    errordlg('Please select two input channels from ''Available Channels''.','Setting Error','modal')
+if isempty(get(handles.listbox_selectedChannels, 'String'))
+   errordlg('Please select at least one input channel from ''Available Channels''.','Setting Error','modal') 
     return;
 end
 
