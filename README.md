@@ -1,4 +1,4 @@
-# Biosensor Processing 3.1
+# Biosensor Processing (u-probe) 3.2
 <a class="twitter-share-button"
    href="https://twitter.com/intent/tweet?text=🚀 Check out @DanuserLab's Biosensor software package on GitHub: https://github.com/danuserlab/Biosensor"
    data-size="large">
@@ -21,6 +21,9 @@ Comprehensive descriptions of the Biosensor package and its individual steps are
 Please submit any feedback on this package, including bugs and feature requests, via the [Issues](https://github.com/DanuserLab/Biosensor/issues) tab that is located at the top of this GitHub repository. General instruction on how to create an issue on GitHub can be found [here](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue).
 
 ## Version History
+### New in Version 3.2:
+- Renamed the software package to **u-probe**. Please select **u-probe** from the analysis packages list to run the software.
+
 ### New in Version 3.1:
 - Added a step to crop a ROI for segementation and its following steps.
 
