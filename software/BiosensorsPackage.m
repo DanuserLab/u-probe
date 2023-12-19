@@ -265,7 +265,7 @@ classdef BiosensorsPackage < Package
     methods (Static)
         
         function name = getName()
-            name = 'Biosensors';
+            name = 'u-probe'; % Updated 2023-12-18. The old name was Biosensors.
         end
         
         function m = getDependencyMatrix(i,j)
