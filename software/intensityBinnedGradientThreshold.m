@@ -52,7 +52,7 @@ function threshold = intensityBinnedGradientThreshold(im,binSize,sigma,smoothPar
 % 8/2011
 %
 %
-% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

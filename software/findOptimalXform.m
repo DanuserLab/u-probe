@@ -48,7 +48,7 @@ function optimalXform = findOptimalXform(baseImage,inputImage,showFigs,xType,iGu
 % Rewritten 11/2010
 %
 %
-% Copyright (C) 2023, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
