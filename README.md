@@ -1,6 +1,6 @@
-# Biosensor Processing (u-probe) 3.2
+# u-probe 3.2
 <a class="twitter-share-button"
-   href="https://twitter.com/intent/tweet?text=🚀 Check out @DanuserLab's Biosensor software package on GitHub: https://github.com/danuserlab/Biosensor"
+   href="https://twitter.com/intent/tweet?text=🚀 Check out @DanuserLab's u-probe software package on GitHub: https://github.com/danuserlab/u-probe"
    data-size="large">
   Share on Twitter
 </a>
@@ -13,16 +13,16 @@ This MATLAB software package allows processing of raw ratiometric biosensor imag
 For more information, please see [**Biosensors for characterizing the dynamics of rho family GTPases in living cells**](https://www.ncbi.nlm.nih.gov/pubmed/20235099), *Curr Protoc Cell Biol*, 2010, Chapter 14:Unit 14.11.1-26, written by Louis Hodgson, Feimo Shen, Klaus Hahn.
 
 ## Documentation
-Detailed instructions for how to download and load the biosensor package into MATLAB is provided via the [Wiki](https://github.com/DanuserLab/Biosensor/wiki/Installation) tab that is located at the top of this GitHub repository.
+Detailed instructions for how to download and load the u-probe package into MATLAB is provided via the [Wiki](https://github.com/DanuserLab/u-probe/wiki/Installation) tab that is located at the top of this GitHub repository.
 
-Comprehensive descriptions of the Biosensor package and its individual steps are available on the [Wiki](https://github.com/DanuserLab/Biosensor/wiki/Biosensors-Package-Description) tab as well.
+Comprehensive descriptions of the u-probe package and its individual steps are available on the [Wiki](https://github.com/DanuserLab/u-probe/wiki/u-probe-Package-Description) tab as well.
 
 ## Software Feedback
-Please submit any feedback on this package, including bugs and feature requests, via the [Issues](https://github.com/DanuserLab/Biosensor/issues) tab that is located at the top of this GitHub repository. General instruction on how to create an issue on GitHub can be found [here](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue).
+Please submit any feedback on this package, including bugs and feature requests, via the [Issues](https://github.com/DanuserLab/u-probe/issues) tab that is located at the top of this GitHub repository. General instruction on how to create an issue on GitHub can be found [here](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue).
 
 ## Version History
 ### New in Version 3.2:
-- Renamed the software package to **u-probe**. Please select **u-probe** from the analysis packages list to run the software.
+- Renamed the software package from **Biosensor** to **u-probe**. Please select **u-probe** from the analysis packages list to run the software.
 
 ### New in Version 3.1:
 - Added a step to crop a ROI for segementation and its following steps.
