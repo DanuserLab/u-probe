@@ -54,7 +54,7 @@ classdef MaskRefinementProcess < MaskProcessingProcess
             name = 'Mask Refinement';
         end
         function h = GUI()
-            h= @maskRefinementProcessGUI;
+            h= @maskRefinementProcessGUI_App;
         end
         
         function funParams = getDefaultParams(owner,varargin)
