@@ -2,7 +2,7 @@
 <a class="twitter-share-button"
    href="https://twitter.com/intent/tweet?text=🚀 Check out @DanuserLab's u-probe software package on GitHub: https://github.com/danuserlab/u-probe"
    data-size="large">
-  Share on Twitter
+  Share on X
 </a>
 
 ![Alt Text](img/biosensorpkg.jpg?raw=true)
