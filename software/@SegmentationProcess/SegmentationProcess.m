@@ -57,6 +57,7 @@ classdef SegmentationProcess < MaskProcess
             procClasses = ...
                 {@ThresholdProcess;
                  @MultiScaleAutoSegmentationProcess;
+                 @CellposeSegmentationProcess
                  @ExternalSegmentationProcess;
                  @ThresholdProcess3D;
                 };
@@ -86,8 +87,18 @@ classdef SegmentationProcess < MaskProcess
                 elseif ~MD.is3D
                     disp('Detected 2D movie');
                     disp('Displaying 2D Segmentation processes only');
-                    procClasses(4) = [];
+                    procClasses(5) = [];
                 end
+
+                if ~isempty(MD)
+                    iSeg3DPackInd = MD.getPackageIndex('uSegment3DPackage');
+
+                    if isempty(iSeg3DPackInd)
+                        procClasses(3) = [];
+                    end
+
+                end
+
             end
             procClasses = cellfun(@func2str, procClasses, 'Unif', 0);
         end
