@@ -75,14 +75,13 @@ funParams = userData.crtProc.funParams_;
 
 % set GUI with Parameters
 
+% set below two edit boxes anyway, even they depend on checkbox_hist_norm. b/c checkbox_hist_norm_Callback does not set them
+set(handles.edit_histnorm_kernel_size, 'String', num2str([funParams.histnorm_kernel_size{:}])) % this is how to convert funParams.histnorm_kernel_size = {int16(64), int16(64)} to string.
+set(handles.edit_histnorm_clip_limit, 'String',num2str(funParams.histnorm_clip_limit))
 if funParams.hist_norm
     set(handles.checkbox_hist_norm, 'Value', 1);
-    set(handles.edit_histnorm_kernel_size, 'String', num2str([funParams.histnorm_kernel_size{:}])) % this is how to convert funParams.histnorm_kernel_size = {int16(64), int16(64)} to string.
-    set(handles.edit_histnorm_clip_limit, 'String',num2str(funParams.histnorm_clip_limit))
 else
     set(handles.checkbox_hist_norm, 'Value', 0);
-    set(handles.edit_histnorm_kernel_size, 'String', num2str([funParams.histnorm_kernel_size{:}])) % this is how to convert funParams.histnorm_kernel_size = {int16(64), int16(64)} to string.
-    set(handles.edit_histnorm_clip_limit, 'String',num2str(funParams.histnorm_clip_limit))
     set(get(handles.uipanel_histnorm,'Children'),'Enable','off');
 end
 
@@ -121,18 +120,17 @@ set(handles.edit_smoothwinsize, 'String',num2str(funParams.smoothwinsize))
 set(handles.edit_test_slice, 'String',num2str(funParams.test_slice))
 
 
-%Setup Use Edge Magnitude to Set Best Slice pop up menu:
-if ismissing(funParams.test_slice)
-    set(handles.popupmenu_use_edge, 'String', CellposeSegmentationProcess.getValidUseEdge);
-    if funParams.use_edge % is a logical, true is dropdown 1, false is dropdown 2
-        parVal = 'Use edge strength to determine optimal slice';
-    else
-        parVal = 'Use maximum intensity to determine optimal slice';
-    end
-    valSel  = find(ismember(CellposeSegmentationProcess.getValidUseEdge, parVal));
-    if isempty(valSel), valSel = 1; end
-    set(handles.popupmenu_use_edge, 'Value', valSel);
+%Setup "Use Edge Magnitude to Set Best Slice" pop up menu, and it depends on edit_test_slice
+set(handles.popupmenu_use_edge, 'String', CellposeSegmentationProcess.getValidUseEdge);
+if funParams.use_edge % is a logical, true is dropdown 1, false is dropdown 2
+    parVal = 'Use edge strength to determine optimal slice';
 else
+    parVal = 'Use maximum intensity to determine optimal slice';
+end
+valSel  = find(ismember(CellposeSegmentationProcess.getValidUseEdge, parVal));
+if isempty(valSel), valSel = 1; end
+set(handles.popupmenu_use_edge, 'Value', valSel);
+if ~ismissing(funParams.test_slice)
     set(handles.text_use_edge, 'Enable','off');
     set(handles.popupmenu_use_edge, 'Enable','off');
 end
