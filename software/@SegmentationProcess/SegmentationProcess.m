@@ -57,8 +57,9 @@ classdef SegmentationProcess < MaskProcess
             procClasses = ...
                 {@ThresholdProcess;
                  @MultiScaleAutoSegmentationProcess;
-                 @CellposeSegmentationProcess
                  @ExternalSegmentationProcess;
+                 @CellposeSegmentationProcess; % uSegment3DPackage only
+                 @ExternalSegment3DProcess; % uSegment3DPackage only
                  @ThresholdProcess3D;
                 };
 
@@ -80,23 +81,19 @@ classdef SegmentationProcess < MaskProcess
                 if isempty(MD)
                     warning('MovieData properties not specified (2D vs. 3D)');
                     disp('Displaying both 2D and 3D Segmentation processes');
-                elseif MD.is3D
-                    disp('Detected 3D movie');
-                    disp('Displaying 3D Segmentation processes only');
-                    procClasses(1:2) = [];
-                elseif ~MD.is3D
-                    disp('Detected 2D movie');
-                    disp('Displaying 2D Segmentation processes only');
-                    procClasses(5) = [];
-                end
-
-                if ~isempty(MD)
-                    iSeg3DPackInd = MD.getPackageIndex('uSegment3DPackage');
-
-                    if isempty(iSeg3DPackInd)
-                        procClasses(3) = [];
+                else
+                    if ~isempty(MD.getPackageIndex('uSegment3DPackage'))
+                        disp('Displaying Segmentation processes for uSegment3DPackage only');
+                        procClasses([1:3, 6]) = [];
+                    elseif MD.is3D
+                        disp('Detected 3D movie');
+                        disp('Displaying 3D Segmentation processes only');
+                        procClasses([1:2, 4:5]) = [];                        
+                    elseif ~MD.is3D
+                        disp('Detected 2D movie');
+                        disp('Displaying 2D Segmentation processes only');
+                        procClasses(4:6) = [];
                     end
-
                 end
 
             end
