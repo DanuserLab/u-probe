@@ -212,8 +212,7 @@ if get(handles.checkbox_hist_norm, 'value')
     end
 
     if isnan(str2double(get(handles.edit_histnorm_clip_limit, 'String'))) ...
-            || str2double(get(handles.edit_histnorm_clip_limit, 'String')) < 0 ...
-            || isempty(str2double(get(handles.edit_histnorm_clip_limit, 'String')))
+            || str2double(get(handles.edit_histnorm_clip_limit, 'String')) < 0
         errordlg('Please provide a valid input for ''Clip Limit in 2D Histogram Equalization''.','Setting Error','modal');
         return;
     end   
@@ -222,16 +221,14 @@ end
 
 if isnan(str2double(get(handles.edit_ksize, 'String'))) ...
         || str2double(get(handles.edit_ksize, 'String')) <= 1 ...
-        || floor(str2double(get(handles.edit_ksize, 'String'))) ~= str2double(get(handles.edit_ksize, 'String')) ...
-        || isempty(str2double(get(handles.edit_ksize, 'String')))
+        || floor(str2double(get(handles.edit_ksize, 'String'))) ~= str2double(get(handles.edit_ksize, 'String'))
     errordlg('Please provide a valid input for ''Contrast Score Neighborhood Size''.','Setting Error','modal');
     return;
 end
 
 % best_diam can be empty (None, string(missing) in Matlab) or int >=1
-if isnan(str2double(get(handles.edit_best_diam, 'String'))) ...
-        || str2double(get(handles.edit_best_diam, 'String')) < 1 ...
-        || floor(str2double(get(handles.edit_best_diam, 'String'))) ~= str2double(get(handles.edit_best_diam, 'String'))
+if ~isempty(get(handles.edit_best_diam, 'String')) && (str2double(get(handles.edit_best_diam, 'String')) < 1 ...
+        || floor(str2double(get(handles.edit_best_diam, 'String'))) ~= str2double(get(handles.edit_best_diam, 'String')))
     errordlg('Please provide a valid input for ''Cellpose Diameter''.','Setting Error','modal');
     return;
 end
@@ -240,16 +237,14 @@ end
 
 if isnan(str2double(get(handles.edit_smoothwinsize, 'String'))) ...
         || str2double(get(handles.edit_smoothwinsize, 'String')) < 3 ...
-        || floor(str2double(get(handles.edit_smoothwinsize, 'String'))) ~= str2double(get(handles.edit_smoothwinsize, 'String')) ...
-        || isempty(str2double(get(handles.edit_smoothwinsize, 'String')))
+        || floor(str2double(get(handles.edit_smoothwinsize, 'String'))) ~= str2double(get(handles.edit_smoothwinsize, 'String'))
     errordlg('Please provide a valid input for ''Smooth Contrast Function Window Size''.','Setting Error','modal');
     return;
 end
 
 % test_slice can be empty (None, string(missing) in Matlab) or int >=0
-if isnan(str2double(get(handles.edit_test_slice, 'String'))) ...
-        || str2double(get(handles.edit_test_slice, 'String')) < 0 ...
-        || floor(str2double(get(handles.edit_test_slice, 'String'))) ~= str2double(get(handles.edit_test_slice, 'String'))
+if ~isempty(get(handles.edit_test_slice, 'String')) && (str2double(get(handles.edit_test_slice, 'String')) < 0 ...
+        || floor(str2double(get(handles.edit_test_slice, 'String'))) ~= str2double(get(handles.edit_test_slice, 'String')))
     errordlg('Please provide a valid input for ''Representative 2D Slice''.','Setting Error','modal');
     return;
 end
