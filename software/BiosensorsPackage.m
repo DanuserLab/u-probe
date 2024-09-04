@@ -34,7 +34,7 @@ classdef BiosensorsPackage < Package
                 outputDir = ip.Results.outputDir;
                 
                 super_args{1} = owner;
-                super_args{2} = [outputDir  filesep 'BiosensorsPackage'];
+                super_args{2} = [outputDir  filesep 'uProbePackage']; % Updated 2024-9-3. The old save folder name was BiosensorsPackage
             end
             % Call the superclass constructor
             obj = obj@Package(super_args{:});
