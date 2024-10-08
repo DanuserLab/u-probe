@@ -71,6 +71,15 @@ if max(p.ChannelIndex) > nChan || min(p.ChannelIndex)<1 || ~isequal(round(p.Chan
     error('Invalid channel numbers specified! Check ChannelIndex input!!')
 end
 
+% Check whether the channel(s) selected for this proc included in the
+% channel(s) processed from previous step
+% Added by Qiongjing (Jenny) Zou, Oct 2024
+if ~isempty(p.ProcessIndex)
+    if ~all(ismember(p.ChannelIndex, movieData.processes_{p.ProcessIndex}.funParams_.ChannelIndex))
+        error('The channels selected is not included in the channels processed from the previous step %s! Check input!', class(movieData.processes_{p.ProcessIndex}));
+    end
+end
+
 % precondition / error checking
 if isequal(currUseSummationChannel, 1)
     if isempty(currProcessIndex)
@@ -151,7 +160,6 @@ toc
 %%%% end of algorithm
 
 disp('Multi-Scale Automatic Segmentation is done!')
-disp('==:) close all')
 
 end % end of wrapper fcn
 
@@ -233,6 +241,7 @@ title('Time series of 5 summary statistics')
 saveas(fts, [outputDir filesep 'TS_of_5statistics_for_channel_' num2str(iChan) '.png'], 'png')
 saveas(fts, [outputDir filesep 'TS_of_5statistics_for_channel_' num2str(iChan) '.fig'], 'fig')
 
+close(fts) % close the figure, added by Qiongjing (Jenny) Zou, Oct 2024
 
 %% due to parfor
 
@@ -302,6 +311,8 @@ if p.imagesOut == 1
         h = getframe(gcf);
         imwrite(h.cdata, fullfile(imOutDir, fileNames{fr}), 'tif')
     end
+    
+    close(ftmp) % close the figure, added by Qiongjing (Jenny) Zou, Oct 2024
     
     %  voteScoreImg
     imOutDir2 = [outputDir filesep 'MSASeg_voteScoreImgs_for_channel_' num2str(iChan)];

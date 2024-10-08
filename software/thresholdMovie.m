@@ -153,6 +153,15 @@ if max(p.ChannelIndex) > nChan || min(p.ChannelIndex)<1 || ~isequal(round(p.Chan
     error('Invalid channel numbers specified! Check ChannelIndex input!!')
 end
 
+% Check whether the channel(s) selected for this proc included in the
+% channel(s) processed from previous step
+% Added by Qiongjing (Jenny) Zou, Oct 2024
+if ~isempty(p.ProcessIndex)
+    if ~all(ismember(p.ChannelIndex, movieData.processes_{p.ProcessIndex}.funParams_.ChannelIndex))
+        error('The channels selected is not included in the channels processed from the previous step %s! Check input!', class(movieData.processes_{p.ProcessIndex}));
+    end
+end
+
 
 nChanThresh = length(p.ChannelIndex);
 if ~isempty(p.ThresholdValue)
