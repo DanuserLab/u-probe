@@ -93,7 +93,7 @@ end
 
     
 % Parameter Setup
-set(handles.edit_factor, 'String', num2str(funParams.ScaleFactor))
+% set(handles.edit_factor, 'String', num2str(funParams.ScaleFactor)) % removed Scale Factor on 2024-10-8 
 set(handles.edit_path, 'String', funParams.OutputDirectory)
 
 % Set movie options
@@ -154,11 +154,12 @@ if isempty(outputDir)
     return;
 end
 
-scaleFactor=str2double(get(handles.edit_factor, 'String'));
-if isnan(scaleFactor)  || scaleFactor< 0
-    errordlg('Please provide a valid input for ''Scale Factor''.','Setting Error','modal');
-    return;
-end
+% removed Scale Factor on 2024-10-8:
+% scaleFactor=str2double(get(handles.edit_factor, 'String')); 
+% if isnan(scaleFactor)  || scaleFactor< 0
+%     errordlg('Please provide a valid input for ''Scale Factor''.','Setting Error','modal');
+%     return;
+% end
 
 %  Process Sanity check (only check underlying data )
 outFunParams.OutputDirectory = outputDir;
@@ -175,7 +176,7 @@ end
 
 % Set parameter
 funParams.ChannelIndex = channelIndex;
-funParams.ScaleFactor = scaleFactor;
+% funParams.ScaleFactor = scaleFactor; % removed Scale Factor on 2024-10-8:
 
 funParams.MakeMovie = get(handles.checkbox_MakeMovie,'Value');
 booleanMovieOptions= {'ConstantScale','ColorBar','MakeAvi','MakeMov'};

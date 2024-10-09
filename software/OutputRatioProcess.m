@@ -124,7 +124,7 @@ classdef OutputRatioProcess < DoubleProcessingProcess
             % Set default parameters
             funParams.OutputDirectory =  [outputDir  filesep 'ratio_tiffs'];
             funParams.ChannelIndex = [];
-            funParams.ScaleFactor = 1000;
+            % funParams.ScaleFactor = 1000; % removed Scale Factor on 2024-10-8 as per Gabe Kreider-Letterman' request.
             funParams.BatchMode = false;
             funParams.MakeMovie=0;
             funParams.MovieOptions.Saturate=0;

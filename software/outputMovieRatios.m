@@ -37,6 +37,8 @@ function movieData = outputMovieRatios(movieData,paramsIn)
 %       converting them to .tif images. It is recommended that this number
 %       be at least 1000 or higher to avoid rounding error in the resulting
 %       .tif images.
+%       Removed Scale Factor on 2024-10-8 as per Gabe Kreider-Letterman' 
+%       request "the export as 16 bit with a scale factor of 1000 is only done for historical reasons"
 %
 %       ('BatchMode' -> True/False) If true, all graphical outputs and user
 %       interaction is suppressed. 
@@ -56,6 +58,9 @@ function movieData = outputMovieRatios(movieData,paramsIn)
 % Hunter Elliott
 % 6/2010
 %
+% Updated to export TIF as 32 bit without scale factor, using Saygin Gulec's 
+% writeTiff function.
+% by Qiongjing (Jenny) Zou, Oct 2024
 %
 % Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
@@ -172,16 +177,21 @@ for iImage = 1:nImages
    
     %Load the image
     currRat= inProc.loadChannelOutput(p.ChannelIndex,iImage);
-    
-    %Scale the image
-    currRat = currRat .* p.ScaleFactor;
+  
+    % removed Scale Factor on 2024-10-8 as per Gabe Kreider-Letterman' request
+    % %Scale the image
+    % currRat = currRat .* p.ScaleFactor;
     
     ratMax = max(ratMax,nanmax(currRat(:)));
     ratMin = min(ratMin,nanmin(currRat(:)));
     
-    %Write it back to file.    
-    imwrite(uint16(currRat),[outDir filesep inNames{1}{iImage}(1:end-4) '.tif'],...
-        'Compression','none'); %Disable compression to ensure compatibility
+    % %Write it back to file.    
+    % imwrite(uint16(currRat),[outDir filesep inNames{1}{iImage}(1:end-4) '.tif'],...
+    %     'Compression','none'); %Disable compression to ensure compatibility
+
+    % Write it back to file as 32-bit TIFF. Edited on 2024-10-8 as per Gabe Kreider-Letterman' request. 
+    % Use Saygin Gulec's writeTiff function. Also see Tiff (https://www.mathworks.com/help/matlab/ref/tiff.html)
+    writeTiff(currRat, [outDir filesep inNames{1}{iImage}(1:end-4) '.tif'], 32);
     
     if ~p.BatchMode && mod(iImage,5)
         %Update the waitbar occasionally to minimize slowdown
