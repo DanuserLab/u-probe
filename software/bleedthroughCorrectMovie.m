@@ -68,6 +68,11 @@ function movieData = bleedthroughCorrectMovie(movieData,varargin)
 % 11/2009
 % Revamped 6/2010
 %
+% Modified to delete the crosstalk correction part in the algorithm as per
+% Gaudenz's suggestion.
+% On the setting GUI, the coefficient for the channel selected for bleedthrough should be 1, 
+% which is 0 (not corrected) in the algorithm, see variable CurrtCoefficients.
+% Qiongjing (Jenny) Zou, Nov 2024
 %
 % Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
@@ -126,17 +131,25 @@ if isempty(p.ChannelIndex)
 elseif length(p.ChannelIndex) > 1
     % SB: this could be improved by storing a nx2xn matrix of coefficients
     % and  inverting this matrix for correcting multiple channels
-    error('Only one channel may be bleedthrough/crosstalk corrected at a time!')
+    error('Only one channel may be bleedthrough corrected at a time!')
 end
 
 assert(movieData.processes_{iProc}.checkChanNum(p.ChannelIndex),...
     'Invalid channel number specified! Check ChannelIndex input!!')
 
+CurrtCoefficients = p.Coefficients;
+% The coefficient for the channel selected for bleedthrough should be 1, which is 0 (not corrected) in the algorithm. - QZ Nov 2024
+if CurrtCoefficients(p.ChannelIndex) == 1
+    CurrtCoefficients(p.ChannelIndex) = 0;
+end
+
 %Ask the user for the channels which bleed into the images to be corrected, if not input
-assert(~isempty(find(p.Coefficients,1)),'No bleedthrough coefficients');
-bleedChannelIndex = find(p.Coefficients(:,1)~=0);
-crossChannelIndex = find(p.Coefficients(:,2)~=0);
-corrChannelIndex  = unique(vertcat(bleedChannelIndex,crossChannelIndex));
+assert(~isempty(find(CurrtCoefficients,1)),'No bleedthrough coefficients');
+
+bleedChannelIndex = find(CurrtCoefficients(:,1)~=0);
+% crossChannelIndex = find(p.Coefficients(:,2)~=0);
+% corrChannelIndex  = unique(vertcat(bleedChannelIndex,crossChannelIndex));
+corrChannelIndex = bleedChannelIndex;
 
 % If using the output of an existing process
 if ~isempty(p.ProcessIndex)
@@ -153,7 +166,7 @@ if ~isempty(p.ProcessIndex)
         hasOutput(i,:)= movieData.processes_{inProcIndex}.checkChannelOutput;
     end
     assert(all(sum(hasOutput(:,inChan),1)),...
-        'The channel to be corrected and the bleedthrough/crosstalk channels must all have been processed prior to bleedthrough correction!');    
+        'The channel to be corrected and the bleedthrough channels must all have been processed prior to bleedthrough correction!');    
     
     inProc = cell(1,nChan);
     for i=inChan', inProc{i} = movieData.processes_{p.ProcessIndex(find(hasOutput(:,i),1,'last'))}; end
@@ -161,7 +174,7 @@ end
 
 
 %% Bleedthrough correction
-disp('Starting bleedthrough/crosstalk correction...')
+disp('Starting bleedthrough correction...')
 
 movieData.processes_{iProc}.setInFilePaths(cell(2,nChan));
 %Retrieve the paths and names of the input images   
@@ -189,11 +202,11 @@ movieData.processes_{iProc}.setOutImagePath(p.ChannelIndex,outDir);
 %% -------------- Apply bleedthrough correction ------------%%
 %Applies the bleedthrough correction from above to each selected channel
 
-disp('Applying bleedthrough/crosstalk correction to images...')
+disp('Applying bleedthrough correction to images...')
 
 %Go through each image and apply the appropriate bleedthrough correction
 if ~p.BatchMode
-    wtBar = waitbar(0,['Please wait, bleedthrough/crosstalk correcting channel ' num2str(p.ChannelIndex(1)) ' ...']);        
+    wtBar = waitbar(0,['Please wait, bleedthrough correcting channel ' num2str(p.ChannelIndex(1)) ' ...']);        
 end        
 
 nImages = movieData.nFrames_;
@@ -202,10 +215,12 @@ disp(['Correcting channel ' num2str(p.ChannelIndex) '...']);
 disp(['Correcting images from ' imPaths{p.ChannelIndex}]);
 disp(['Storing results in ' outDir]);
 
-corrCoefficients = vertcat(p.Coefficients(bleedChannelIndex,1),p.Coefficients(crossChannelIndex,2));
+% corrCoefficients = vertcat(p.Coefficients(bleedChannelIndex,1),p.Coefficients(crossChannelIndex,2));
+corrCoefficients = CurrtCoefficients(bleedChannelIndex,1);
 
 for j = 1:length(corrChannelIndex)
-    if j<=numel(bleedChannelIndex), type = 'bleedthrough'; else type='crosstalk'; end
+    % if j<=numel(bleedChannelIndex), type = 'bleedthrough'; else type='crosstalk'; end
+    type = 'bleedthrough';
     disp(['Correcting ' type ' from channel ' num2str(corrChannelIndex(j)) ','])
     disp(['using images from ' imPaths{corrChannelIndex(j)}])        
     disp(['...using ' type ' coefficient of ' num2str(corrCoefficients(j))])
@@ -275,4 +290,4 @@ disp('Saving results...')
 movieData.processes_{iProc}.setDateTime;
 movieData.save;
 
-disp('Finished correcting bleedthrough/crosstalk!')
+disp('Finished correcting bleedthrough correction!')

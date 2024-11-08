@@ -2,6 +2,10 @@ classdef BleedthroughCorrectionProcess < ImageCorrectionProcess
     %A class for performing bleedthrough correction on images.
     %
     %Hunter Elliott, 5/2010
+    % 
+    % Modified to delete the crosstalk correction part in this process as per
+    % Gaudenz's suggestion.
+    % Qiongjing (Jenny) Zou, Nov 2024
 %
 % Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
@@ -45,7 +49,7 @@ classdef BleedthroughCorrectionProcess < ImageCorrectionProcess
     end
     methods (Static)
         function name =getName()
-            name = 'Bleedthrough/Crosstalk Correction';
+            name = 'Bleedthrough Correction'; % deleted crosstalk in name. - QZ Nov 2024
         end
         function h = GUI()
             h= @bleedthroughCorrectionProcessGUI;
@@ -62,7 +66,8 @@ classdef BleedthroughCorrectionProcess < ImageCorrectionProcess
             funParams.OutputDirectory = [outputDir  filesep 'bleedthrough_corrected_images'];
             funParams.ChannelIndex = [];%No default
             funParams.ProcessIndex = [];%No default
-            funParams.Coefficients = zeros(numel(owner.channels_),2);%No default
+            % funParams.Coefficients = zeros(numel(owner.channels_),2);%No default 
+            funParams.Coefficients = zeros(size(owner.channels_))';%No default % From 2024-11, no longer do crosstalk correction, no 2nd colmun. - QZ
             funParams.BatchMode = false;      
         end
     end

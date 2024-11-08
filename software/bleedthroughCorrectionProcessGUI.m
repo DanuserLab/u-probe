@@ -143,6 +143,13 @@ funParams.ChannelIndex = channelIndex;
 
 % Get coefficients
 data= get(handles.uitable_Coefficients,'Data');
+
+% QZ added Nov 2024
+if data{channelIndex, 2} ~= 1
+    errordlg('The coefficient for the channel selected for bleedthrough should be 1.','Setting Error','modal')
+    return;
+end
+
 if ~all(cellfun(@isscalar,data(:,2:end)))
     errordlg('Please enter valid coefficients.','Setting Error','modal')
     return;
@@ -153,11 +160,12 @@ if ~all(coefficients>=0)
     return;
 end
 
-if any(coefficients(:,1)>0 & coefficients(:,2)>0)
-    errordlg('The same channel cannot be  used for bleed-through and cross-talk correction.',...
-        'Setting Error','modal')
-    return;
-end
+% No long do crosstalk correction. - QZ Nov 2024
+% if any(coefficients(:,1)>0 & coefficients(:,2)>0)
+%     errordlg('The same channel cannot be  used for bleed-through and cross-talk correction.',...
+%         'Setting Error','modal')
+%     return;
+% end
 funParams.Coefficients = coefficients;
 
 % Set parameters
@@ -174,6 +182,9 @@ id = get(hObject, 'Value');
 if isempty(id), return; end
 
 set(handles.edit_channel, 'String', props{1}{id}, 'UserData',props{2}(id));
+
+handles.uitable_Coefficients.Data(cell2mat(handles.uitable_Coefficients.Data(:,2)) == 1, 2) = {0}; % reset previous selected channels' coefficient from 1 to 0:
+handles.uitable_Coefficients.Data{id, 2} = 1; % the bleedthrough coefficient for the channel selected for bleedthrough coefficient is always 1. QZ Nov 2024
 
 
 % --- Executes during object deletion, before destroying properties.

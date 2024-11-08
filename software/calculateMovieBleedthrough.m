@@ -72,6 +72,9 @@ function movieData = calculateMovieBleedthrough(movieData,varargin)
 % Hunter Elliott 
 % 2/2010
 %
+% Modified to accommodate polyfit, which returns rsquared in the second
+% output in matlab 2024a and after.
+% Qiongjing (Jenny) Zou, Nov 2024
 %
 % Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
@@ -203,7 +206,7 @@ fitCoef = zeros(nImages,2);
 fitStats = struct('R',cell(nImages,1),...
                   'df',cell(nImages,1),...
                'normr',cell(nImages,1),...
-               'Rsquared',cell(nImages,1));
+               'rsquared',cell(nImages,1));
 
 %Make figure for showing all lines           
 allFig = figure;
@@ -213,6 +216,9 @@ nByn = ceil(sqrt(nImages));%Determine size of sub-plot array
 
 disp(['Calculating bleedthrough of channel "' imDirs{1}  ...
       '" into channel "' imDirs{2} '"..']);
+
+% Set figure size to maximize the window, b/c there is nFrame subplots. - QZ
+set(gcf, 'Position', get(0, 'Screensize'));  
 
 for iImage = 1:nImages
     
@@ -228,12 +234,22 @@ for iImage = 1:nImages
     %Fit a line to the current images
     [fitCoef(iImage,:),tmp] = polyfit(fImage(combMask(:)),...
                                                    bImage(combMask(:)),1);                                                   
+    
+    % Before matlab 2024a, polyfit only return 3 fileds in tmp, which is R
+    % df and normr. In matlab 2024a, they added rsquared in 2nd output, tmp.
+    % Renamed Rsquared in this file to rsquared and edit the below part.
+    % Qiongjing (Jenny) Zou, Nov 2024
+    if ~isfield(tmp, 'rsquared')
+    % Below method give slightly diff rsquared value as the polyfit in matlab 2024a and
+    % after. - QZ
     %Calculate R^2 for this fit
     lFun = @(x)(x * fitCoef(iImage,1) + fitCoef(iImage,2));
-    tmp.Rsquared = 1 - sum((bImage(:) - lFun(fImage(:))) .^2) / ...
+    tmp.rsquared = 1 - sum((bImage(:) - lFun(fImage(:))) .^2) / ...
                        sum((bImage(:) - mean(bImage(:))) .^2);
-    
-    fitStats(iImage) = tmp; %Allow extra field for Rsquared                                                   
+    end
+
+    fitStats(iImage) = tmp; %Allow extra field for rsquared  
+
                                                
     %switch to the current sub-plot
     subplot(nByn,nByn,iImage)
@@ -242,7 +258,7 @@ for iImage = 1:nImages
     plot(fImage(combMask(:)),bImage(combMask(:)),'.');
     hold on
     title({['Image #' num2str(iImage) ' Y = ' num2str(fitCoef(iImage,1))...
-        'x + ' num2str(fitCoef(iImage,2))], ['R Squared = ' num2str(fitStats(iImage).Rsquared)]})        
+        'x + ' num2str(fitCoef(iImage,2))], ['R Squared = ' num2str(fitStats(iImage).rsquared)]})        
     xlabel('Fluorphore Channel Intensity')
     ylabel('Bleedthrough Channel Intensity')
    
@@ -276,13 +292,14 @@ hgsave(allFig,[outDir filesep 'bleedthrough plot.fig'])
 %Modify the filename to reflect the channels used.
 fileName = [fName '_channel_' num2str(fChan) '_to_channel_' ...
             num2str(bChan) '.mat'];
-save([movieData.outputDirectory_ filesep fileName],'avgCoef','stdCoef','fitCoef','fitStats')
+save([movieData.outputDirectory_ filesep dName filesep fileName],'avgCoef','stdCoef','fitCoef','fitStats')
 
 disp(['Calculated bleedthrough coefficient: ' num2str(avgCoef) ' +/- ' num2str(stdCoef)])
 
 
 disp('Finished with bleedthrough calculation!')
 
+disp(['Please see bleedthrough calculation results in ' movieData.outputDirectory_ filesep dName])
 
 
 function [fChan,bChan,fMaskChan,bMaskChan] = parseInput(argArray)
