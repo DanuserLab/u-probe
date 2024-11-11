@@ -88,7 +88,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
 
             %% extra parameters not on GUI:
             funParams.imagesOut = 1;
-            funParams.figVisible = 'on';
+            funParams.figVisible = 'off'; % Changed default from 'on' to 'off'. - Qiongjing (Jenny) Zou, Nov 2024
             funParams.MinimumSize = 10; % unit is pixel
 
 

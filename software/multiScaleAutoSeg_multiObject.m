@@ -21,6 +21,9 @@ function multiScaleAutoSeg_multiObject(movieDataOrProcess, varargin)
 %
 % Qiongjing (Jenny) Zou, Aug 2021
 %
+% Modified to give user option to turn 'on' and 'off' of the pop up figures during run.
+% Qiongjing (Jenny) Zou, Nov 2024
+%
 % Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
@@ -223,7 +226,7 @@ q3ts = quantile(pixelmat1, 0.75, 1);
 q99ts = quantile(pixelmat1, 0.99, 1);
 q01ts = quantile(pixelmat1, 0.01, 1);
 
-fts = figure;
+fts = figure('Visible', p.figVisible); % allowed pop up figure to be turned off. - Qiongjing (Jenny) Zou, Nov 2024
 plot(mts)
 hold on
 
@@ -241,7 +244,6 @@ title('Time series of 5 summary statistics')
 saveas(fts, [outputDir filesep 'TS_of_5statistics_for_channel_' num2str(iChan) '.png'], 'png')
 saveas(fts, [outputDir filesep 'TS_of_5statistics_for_channel_' num2str(iChan) '.fig'], 'fig')
 
-close(fts) % close the figure, added by Qiongjing (Jenny) Zou, Oct 2024
 
 %% due to parfor
 
@@ -292,28 +294,32 @@ if p.imagesOut == 1
     intmin = quantile(allint, 0.002);
     intmax = quantile(allint, 0.998);
     
+    % Edited the code below to enable the on and off of the segmentation figures. - Qiongjing (Jenny) Zou, Nov 2024
     ftmp = figure('Visible', p.figVisible);
+    ax = axes('Parent', ftmp);  % Create an axes inside the figure. Useful when figure is invisible. - QZ
     for fr = 1:frmax
-        figure(ftmp)
-        imshow(I{fr}, [intmin, intmax])
+        % figure(ftmp)
+        % imshow(I{fr}, [intmin, intmax])
+        imshow(I{fr}, [intmin, intmax], 'Parent', ax)  % Display image in specified axes. Useful when figure if invisible. - QZ
         hold on
         bdd = bwboundaries(refinedMask{fr});
         
         for k = 1:numel(bdd)
             bdd1 = bdd{k};
-            plot(bdd1(:,2), bdd1(:,1), 'r');
+            % plot(bdd1(:,2), bdd1(:,1), 'r');
+            plot(ax, bdd1(:,2), bdd1(:,1), 'r');  % - QZ
         end
         
         %bdd1 = bdd{1};
         %plot(bdd1(:,2), bdd1(:,1), 'r');
         hold off
         
-        h = getframe(gcf);
+        % h = getframe(gcf);
+        h = getframe(ftmp);  % Capture the frame from the figure. QZ
         imwrite(h.cdata, fullfile(imOutDir, fileNames{fr}), 'tif')
     end
     
-    close(ftmp) % close the figure, added by Qiongjing (Jenny) Zou, Oct 2024
-    
+
     %  voteScoreImg
     imOutDir2 = [outputDir filesep 'MSASeg_voteScoreImgs_for_channel_' num2str(iChan)];
     if ~isdir(imOutDir2); mkdir(imOutDir2); end

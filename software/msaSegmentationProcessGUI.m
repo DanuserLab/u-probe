@@ -106,6 +106,12 @@ end
 set(handles.edit_ObjectNumber, 'String',num2str(funParams.ObjectNumber))
 set(handles.edit_finalRefinementRadius, 'String',num2str(funParams.finalRefinementRadius))
 
+if isequal(funParams.figVisible, 'on')
+  set(handles.checkbox_figFlag, 'Value', 1)
+else
+  set(handles.checkbox_figFlag, 'Value', 0)
+end
+
 % set GUI with popupmenu_ProcessIndex
 sumChanProc =  cellfun(@(x) isa(x,'GenerateSummationChannelProcess'),userData.MD.processes_);
 sumChanProcID=find(sumChanProc);
@@ -217,6 +223,12 @@ funParams.ChannelIndex = channelIndex;
 
 funParams.ObjectNumber = str2double(get(handles.edit_ObjectNumber, 'String'));
 funParams.finalRefinementRadius = str2double(get(handles.edit_finalRefinementRadius, 'String'));
+
+if get(handles.checkbox_figFlag, 'Value') == 1
+    funParams.figVisible = 'on';
+else
+    funParams.figVisible = 'off';
+end
 
 if handles.tightness_checkbox.Value == 1
     funParams.tightness = str2double(handles.tightness_display.String);
