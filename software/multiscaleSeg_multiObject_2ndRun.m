@@ -1,26 +1,11 @@
-function [finalMask, voteScoreImg, voteScoreMat] = multiscaleSeg_multiObject_im(im, varargin)
-% multiscaleSeg_singleObject_im Segment a single cell image by combining segmentation
-% results obtained at multiple smoothing scales. Since it requires only one
-% tuning parameters (tightness) and ‘tightness’=0.5 works well for many cases, 
-% it achieves almost automatic segmentation.
-%
-% Input: an image
-% Output: a mask and a transformed image with the value of voting scores
-% (0 <= score <= 24)
-% Usage:
-%       rmask = multiscaleSeg_multiObject_im(im, 'tightness', 0.5);
+function masksCell = multiscaleSeg_multiObject_2ndRun(scoreArray, varargin)
+% multiscaleSeg_multiObject_2ndRun Segment a single cell image 
+% when a voting score array is already given from previous running 
+% of MSA seg algorithm.
 %
 % Updates:
+%
 % 2024/11. J Noh. 
-%   Revise for efficiency. The algorithm now saves the voting
-%   score array output, so that if it is run again only with a different
-%   threshold, it now doesn't run multi-scale segmentations redundantly but
-%   it generates new masks for the different threshold directly from the
-%   previously saved voting score array.
-% 2018/04/20, Jungsik Noh. Modified from multiscaleSeg_im(). Options are
-% simplified.
-% 2017/05/29, Jungsik Noh
-% Updated Andrew R. Jamieson - Sept. 2017
 %
 % Copyright (C) 2024, Danuser Lab - UTSouthwestern 
 %
@@ -41,19 +26,19 @@ function [finalMask, voteScoreImg, voteScoreMat] = multiscaleSeg_multiObject_im(
 % 
 % 
 
-ip = inputParser;
-ip.addRequired('im');
+%% parse input
+
+ip = inputParser; 
 ip.addParameter('tightness', 0.5, @(x) isnumeric(x) && (x==-1 || x >= 0 || x<=1));
 ip.addParameter('numVotes', -1);
 ip.addParameter('finalRefinementRadius', 1);
 ip.addParameter('MinimumSize', 10);
 ip.addParameter('ObjectNumber', 1000);
 
-ip.parse(im, varargin{:});
+ip.parse(varargin{:});
 p = ip.Results;
 
 if (p.numVotes > 0); p.tightness = -1; end
-
 
 %sigmas = [0 0.66 1 1.66 2.5 4];  % unit: pixel (common scales for xxx by xxx size confocal images)
 sigmas = [0 0.5 1 1.5 2 2.5 3];  % unit: pixel (common scales for xxx by xxx size confocal images)
@@ -61,108 +46,40 @@ sigmas = [0 0.5 1 1.5 2 2.5 3];  % unit: pixel (common scales for xxx by xxx siz
 %p.ObjectNumber = 1;
 p.FillHoles = 1;
 
-numModels = numel(sigmas)*3*2;
-maskingResultArr = nan(size(im, 1), size(im, 2), numModels);
-
-%%  Gaussian filtering, method, refinement
-for k = 1:numel(sigmas)
-    currImage = im;
-
-    if sigmas(k) > 0
-        currImage = filterGauss2D(currImage, sigmas(k));
-    end
-
-    % minmax
-    try
-        currThresh = thresholdFluorescenceImage(currImage); 
-        currMask1 = (currImage >= currThresh);
-
-        p.ClosureRadius = 1;
-        refinedMask1 = maskRefinementCoreFunc(currMask1, p);
-        maskingResultArr(:,:, 6*(k-1)+1) = refinedMask1;
-
-        p.ClosureRadius = 3;
-        refinedMask1 = maskRefinementCoreFunc(currMask1, p);
-        maskingResultArr(:,:, 6*(k-1)+2) = refinedMask1;
-
-    catch
-        disp(['GaussFilterSigma: ', num2str(sigmas(k))])
-        disp('Error in Minmax thresholding')
-        maskingResultArr(:,:, 6*(k-1)+1) = nan(size(currImage, 1), size(currImage, 2));
-        maskingResultArr(:,:, 6*(k-1)+2) = nan(size(currImage, 1), size(currImage, 2));
-    end
-
-    % Rosin
-    try
-        currThresh = thresholdRosin(currImage); 
-        currMask1 = (currImage >= currThresh); 
-
-        p.ClosureRadius = 1;
-        refinedMask1 = maskRefinementCoreFunc(currMask1, p);
-        maskingResultArr(:,:, 6*(k-1)+3) = refinedMask1;
-
-        p.ClosureRadius = 3;
-        refinedMask1 = maskRefinementCoreFunc(currMask1, p);
-        maskingResultArr(:,:, 6*(k-1)+4) = refinedMask1;
-        
-    catch
-        disp(['GaussFilterSigma: ', num2str(sigmas(k))])
-        disp('Error in Rosin thresholding')
-        maskingResultArr(:,:, 6*(k-1)+3) = nan(size(currImage, 1), size(currImage, 2));
-        maskingResultArr(:,:, 6*(k-1)+4) = nan(size(currImage, 1), size(currImage, 2));        
-    end
-    
-    
-    % Otsu
-    try
-        currThresh = thresholdOtsu(currImage); 
-        currMask1 = (currImage >= currThresh); 
-
-        p.ClosureRadius = 1;
-        refinedMask1 = maskRefinementCoreFunc(currMask1, p);
-        maskingResultArr(:,:, 6*(k-1)+5) = refinedMask1;
-
-        p.ClosureRadius = 3;
-        refinedMask1 = maskRefinementCoreFunc(currMask1, p);
-        maskingResultArr(:,:, 6*(k-1)+6) = refinedMask1;
-    catch
-        disp(['GaussFilterSigma: ', num2str(sigmas(k))])
-        disp('Error in Otsu thresholding')
-        maskingResultArr(:,:, 6*(k-1)+5) = nan(size(currImage, 1), size(currImage, 2));
-        maskingResultArr(:,:, 6*(k-1)+6) = nan(size(currImage, 1), size(currImage, 2));        
-    end
-    
-end
-
-
+%numModels = numel(sigmas)*3*2;
+%maskingResultArr = nan(size(im, 1), size(im, 2), numModels);
 
 %% sum maskings from multiple methods
 
-res_0 = mean(maskingResultArr(:,:,1:end), 3, 'omitnan');
-res = round(res_0 .* numModels);
-tab = tabulate(res(:));
-tabulate(res(:));
+frmax = size(scoreArray, 3);
+masksCell =  cell(frmax, 1);
 
-val = tab(:,1);
-counts = tab(:,2);
+for fr = 1:frmax
 
-[~, ind] = sort(counts, 'descend');
+    disp('=====')
+    disp(['Frame: ', num2str(fr)])  
+    res = scoreArray(:,:,fr);
 
-a = val(ind(1));
-b = val(ind(2));
-backgroundth = min(a, b);
-maskth = max(a, b);
+    tab = tabulate(res(:));
+    tabulate(res(:));
 
-%
-voteScoreMat = res;
-
-%% ensemble method
-if (p.numVotes < 0)
- 
+    if (p.numVotes < 0)    
+    
         if (p.tightness > 1) || (p.tightness < 0)
             error('Tightness should range from 0 to 1.')
         end
 
+        val = tab(:,1);
+        counts = tab(:,2);
+
+        [~, ind] = sort(counts, 'descend');
+
+        a = val(ind(1));
+        b = val(ind(2));
+        backgroundth = min(a, b);
+        maskth = max(a, b);
+
+        % thresholding
         mnum_smallest = maskth;
         mnum_biggest = backgroundth + 1;
         mnum_interp = interp1([0, 1], [mnum_biggest, mnum_smallest], p.tightness);
@@ -173,20 +90,19 @@ if (p.numVotes < 0)
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp([num2str(numVotes), ' (tightness: ', num2str(p.tightness), ')'])
 
-else
+    else
         res0 = (res >= p.numVotes);
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp(num2str(p.numVotes))
+    end
+    
+    % final refinement    
+    p.ClosureRadius = p.finalRefinementRadius;
+    masksCell{fr} = maskRefinementCoreFunc(res0, p);    
+end
+  
 end
 
-%% final refinement
-p.ClosureRadius = p.finalRefinementRadius;
-finalMask = maskRefinementCoreFunc(res0, p);
-
-res_scaled = res ./ numModels .* 200;
-voteScoreImg = uint8(res_scaled);
- 
-end
 
 function currMask = maskRefinementCoreFunc(currMask, p)
 % maskRefinementCoreFunc is a part of refineMovieMasks.m to implement
