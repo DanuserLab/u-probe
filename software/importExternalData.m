@@ -30,7 +30,7 @@ function importExternalData(movieData, processClass, varargin)
 % 2. Make sure the external masks have the same nFrames as the movie
 % 3. Make sure the external masks are imread readable and binary
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

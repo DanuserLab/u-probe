@@ -7,7 +7,7 @@ classdef BleedthroughCorrectionProcess < ImageCorrectionProcess
     % Gaudenz's suggestion.
     % Qiongjing (Jenny) Zou, Nov 2024
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

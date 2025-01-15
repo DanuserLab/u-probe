@@ -6,7 +6,7 @@ classdef ShadeCorrectionProcess < ImageCorrectionProcess
     %Hunter Elliott, 5/2010
     %
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

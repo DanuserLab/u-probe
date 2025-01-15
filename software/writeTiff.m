@@ -25,7 +25,7 @@ function writeTiff(img, filename, bits, append_to_end)
 % 
 % Written by Saygin Gulec sayging@live.unc.edu from Klaus Hahn's lab, 2024
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

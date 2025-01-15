@@ -24,7 +24,7 @@ function multiScaleAutoSeg_multiObject(movieDataOrProcess, varargin)
 % Modified to give user option to turn 'on' and 'off' of the pop up figures during run.
 % Qiongjing (Jenny) Zou, Nov 2024
 %
-% Copyright (C) 2024, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
