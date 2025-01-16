@@ -66,13 +66,49 @@ end
 % --- Executes just before msaSegmentationProcessGUI is made visible.
 function msaSegmentationProcessGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
-
-processGUI_OpeningFcn(hObject, eventdata, handles, varargin{:},'initChannel',1);
+processGUI_OpeningFcn(hObject, eventdata, handles, varargin{:},'initChannel',0); % change initChannel from 1 to 0, so it will local checkbox_all_Callback, pushbutton_select_Callback, and pushbutton_delete_Callback.
 
 % Parameter setup
 userData = get(handles.figure1, 'UserData');
 if isempty(userData), userData = struct(); end
 funParams = userData.crtProc.funParams_;
+
+% Below line 59-91 is from processGUI_OpeningFcn, b/c initChannel is 0, then this part will not be called
+% in processGUI_OpeningFcn, so need to add here.
+% Set up available input channels
+set(handles.listbox_availableChannels,'String',userData.MD.getChannelPaths(), ...
+    'UserData',1:numel(userData.MD.channels_));
+
+channelIndex = funParams.ChannelIndex;
+
+% Find any parent process
+userData.parentProc = userData.crtPackage.getParent(userData.procID);
+if numel(userData.parentProc) > 1
+    userData.parentProc = userData.parentProc(end); % use last parentProc as parentProc
+end
+if isempty(userData.crtPackage.processes_{userData.procID}) && ~isempty(userData.parentProc)
+    % Check existence of all parent processes
+    emptyParentProc = any(cellfun(@isempty,userData.crtPackage.processes_(userData.parentProc)));
+    if ~emptyParentProc
+        % Intersect channel index with channel index of parent processes
+        parentChannelIndex = @(x) userData.crtPackage.processes_{x}.funParams_.ChannelIndex;
+        for i = userData.parentProc
+            channelIndex = intersect(channelIndex,parentChannelIndex(i));
+        end
+    end
+   
+end
+
+
+if ~isempty(channelIndex)
+    channelString = userData.MD.getChannelPaths(channelIndex);
+else
+    channelString = {};
+end
+
+set(handles.listbox_selectedChannels,'String',channelString,...
+    'UserData',channelIndex);
+
 
 
 % set GUI with Parameters
@@ -110,6 +146,12 @@ if isequal(funParams.figVisible, 'on')
   set(handles.checkbox_figFlag, 'Value', 1)
 else
   set(handles.checkbox_figFlag, 'Value', 0)
+end
+
+if isequal(funParams.verbose, 'on')
+  set(handles.checkbox_verbose, 'Value', 1)
+else
+  set(handles.checkbox_verbose, 'Value', 0)
 end
 
 % Initialize previewing constants
@@ -260,6 +302,12 @@ if get(handles.checkbox_figFlag, 'Value') == 1
     funParams.figVisible = 'on';
 else
     funParams.figVisible = 'off';
+end
+
+if get(handles.checkbox_verbose, 'Value') == 1
+    funParams.verbose = 'on';
+else
+    funParams.verbose = 'off';
 end
 
 if handles.tightness_checkbox.Value == 1
@@ -531,6 +579,58 @@ function edit_finalRefinementRadius_Callback(hObject, eventdata, handles)
 update_data(hObject,eventdata,handles);
 
 
+% Normally, below 3 callback fcns were in processGUI_OpeningFcn, however, here we need to update_data for the preview, 
+% so we need to add checkbox_all_Callback, pushbutton_select_Callback, and pushbutton_delete_Callback here. - QZ
+% --- Executes on button press in checkbox_all.
+function checkbox_all_Callback(hObject, eventdata, handles)
+% Retrieve available channels properties
+availableProps = get(handles.listbox_availableChannels, {'String','UserData'});
+if isempty(availableProps{1}), return; end
+
+% Update selected channels
+if get(hObject,'Value')
+    set(handles.listbox_selectedChannels, 'String', availableProps{1},...
+        'UserData',availableProps{2});
+else
+    set(handles.listbox_selectedChannels, 'String', {}, 'UserData',[], 'Value',1);
+end
+
+update_data(hObject,eventdata,handles);
+
+
+% --- Executes on button press in pushbutton_select.
+function pushbutton_select_Callback(hObject, eventdata, handles)
+% Retrieve  channels properties
+availableProps = get(handles.listbox_availableChannels, {'String','UserData','Value'});
+selectedProps = get(handles.listbox_selectedChannels, {'String','UserData'});
+
+% Find new elements and set them to the selected listbox
+newID = availableProps{3}(~ismember(availableProps{1}(availableProps{3}),selectedProps{1}));
+selectedChannels = horzcat(selectedProps{1}',availableProps{1}(newID)');
+selectedData = horzcat(selectedProps{2}, availableProps{2}(newID));
+set(handles.listbox_selectedChannels, 'String', selectedChannels, 'UserData', selectedData);
+
+update_data(hObject,eventdata,handles);
+
+
+% --- Executes on button press in pushbutton_delete.
+function pushbutton_delete_Callback(hObject, eventdata, handles)
+% Generic callback to be exectuted when a selected channel is removed from
+% the graphical settings interface
+
+% Get selected properties and returin if empty
+selectedProps = get(handles.listbox_selectedChannels, {'String','UserData','Value'});
+if isempty(selectedProps{1}) || isempty(selectedProps{3}),return; end
+
+% Delete selected item
+selectedProps{1}(selectedProps{3}) = [ ];
+selectedProps{2}(selectedProps{3}) = [ ];
+set(handles.listbox_selectedChannels, 'String', selectedProps{1},'UserData',selectedProps{2},...
+    'Value',max(1,min(selectedProps{3},numel(selectedProps{1}))));
+
+update_data(hObject,eventdata,handles);
+
+
 
 function update_data(hObject,eventdata, handles)
 
@@ -582,7 +682,7 @@ if get(handles.checkbox_preview,'Value') % Preview
     PreviewOutputDir = [userData.MD.outputDirectory_ filesep 'MSApreviewTempDir'];
     if ~isfolder(PreviewOutputDir); mkdir(PreviewOutputDir); end % deleted this when setting GUI closed
     masksOutDir = [PreviewOutputDir filesep 'Masks'];
-    mkClrDir(masksOutDir);
+    if ~isfolder(masksOutDir); mkdir(masksOutDir); end
 
     I = cell(1, 1);
     I{1} = imData;
@@ -605,13 +705,14 @@ if get(handles.checkbox_preview,'Value') % Preview
     % below params not on GUI:
     currImagesOut = 1; % default value
     currFigVisible = 'on'; % always on for preview
+    currVerbose = 'off'; % always off for preview
     currMinimumSize = 10; % default value
 
     % call the main algorithm fcn:
     refinedMask = MSA_Seg_multiObject_imDir_2(I, imgStack, 1, PreviewOutputDir, ...
         masksOutDir, k, imIndx, 'tightness', currTightness, 'numVotes', currNumVotes, ...
         'ObjectNumber', currObjectNumber, 'finalRefinementRadius', currFinalRefinementRadius, ...
-        'imagesOut', currImagesOut, 'figVisible', currFigVisible, 'MinimumSize', currMinimumSize);
+        'imagesOut', currImagesOut, 'figVisible', currFigVisible, 'MinimumSize', currMinimumSize, 'verbose', currVerbose);
 
     %%%% end of algorithm
 
@@ -680,6 +781,7 @@ ip.addParameter('figVisible', 'on');
 ip.addParameter('finalRefinementRadius', 1);
 ip.addParameter('MinimumSize', 10);
 ip.addParameter('ObjectNumber', 1000);
+ip.addParameter('verbose', 'off');
 %ip.addParameter('parpoolNum', 1);
 
 ip.parse(varargin{:});
@@ -729,7 +831,7 @@ pString = 'MSA_mask_';      %Prefix for saving masks to file
 scoreArrayFilePath = [outputDir filesep 'scoreArray_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat'];
 if ~isfile(scoreArrayFilePath) || ~isequaln(p2, old_p2)
 
-    [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, imIndx);
+    [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, imIndx, p.verbose);
 
     % voteScoreImg
     % dir name for vote score images
@@ -742,7 +844,7 @@ if ~isfile(scoreArrayFilePath) || ~isequaln(p2, old_p2)
 
 else
 
-    refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, imIndx);
+    refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, imIndx, p.verbose);
 
 end
 
@@ -760,7 +862,7 @@ end
 
 %% When MSA seg is run for the first time with the same segmentation parameter
 
-function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, imIndx)
+function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, imIndx, verbose)
     %% Time series of 5 numbers
 
     pixelmat = reshape(imgStack, [], frmax);
@@ -809,7 +911,7 @@ function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgS
             multiscaleSeg_multiObject_im(im, ...
                 'tightness', currTightness, 'numVotes', currNumVotes, ...
                 'finalRefinementRadius', p.finalRefinementRadius, ...
-                'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber);
+                'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber, 'verbose', verbose);
     end
     
     %% save voting scoreArray
@@ -824,7 +926,7 @@ function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgS
 
 %% When MSA seg is already run with the same parameters except thresholds
 
-function refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, imIndx)
+function refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, imIndx, verbose)
     
     % Load scoreArray    
     tmp = load([outputDir filesep 'scoreArray_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat']);
@@ -833,5 +935,5 @@ function refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, imIndx)
     refinedMask = multiscaleSeg_multiObject_2ndRun(scoreArray, ...
             'numVotes', p.numVotes, 'tightness', p.tightness, ...
             'finalRefinementRadius', p.finalRefinementRadius, ...
-            'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber);
+            'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber, 'verbose', verbose);
 % end of MSA_Seg_2ndRun fcn

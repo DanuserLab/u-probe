@@ -73,6 +73,8 @@ userData = get(handles.figure1, 'UserData');
 if isempty(userData), userData = struct(); end
 funParams = userData.crtProc.funParams_;
 
+% Below line 59-91 is from processGUI_OpeningFcn, b/c initChannel is 0, then this part will not be called
+% in processGUI_OpeningFcn, so need to add here.
 % Set up available input channels
 set(handles.listbox_availableChannels,'String',userData.MD.getChannelPaths(), ...
     'UserData',1:numel(userData.MD.channels_));
@@ -106,6 +108,8 @@ end
 
 set(handles.listbox_selectedChannels,'String',channelString,...
     'UserData',channelIndex);
+
+
 
 set(handles.edit_GaussFilterSigma,'String',funParams.GaussFilterSigma);
 

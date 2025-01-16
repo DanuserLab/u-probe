@@ -63,9 +63,10 @@ currObjectNumber = p.ObjectNumber;
 currFinalRefinementRadius = p.finalRefinementRadius;
 currUseSummationChannel = p.useSummationChannel;
 currProcessIndex = p.ProcessIndex; % the index of using which previous proc's output as input of thisProc
+currFigVisible = p.figVisible;
+currVerbose = p.verbose;
 % below params not on GUI:
 currImagesOut = p.imagesOut;
-currFigVisible = p.figVisible;
 currMinimumSize = p.MinimumSize;
 
 % Sanity Checks
@@ -154,13 +155,15 @@ for k = p.ChannelIndex
             I{fr} = imread([inFilePaths{1,k} filesep imFileNames{fr}]); % this is the way to read image from output of a previous process.
         end
         imgStack = cat(3, imgStack, I{fr});
+        if isequal(currVerbose, 'on')
         fprintf(1, '%g ', fr);
+        end
     end
 
     MSA_Seg_multiObject_imDir_2(I, imgStack, imFileNames, movieData.nFrames_, p.OutputDirectory, ...
         masksOutDir, k, 'tightness', currTightness, 'numVotes', p.numVotes, ...
         'ObjectNumber', currObjectNumber, 'finalRefinementRadius', currFinalRefinementRadius, ...
-        'imagesOut', currImagesOut, 'figVisible', currFigVisible, 'MinimumSize', currMinimumSize)
+        'imagesOut', currImagesOut, 'figVisible', currFigVisible, 'MinimumSize', currMinimumSize, 'verbose', currVerbose)
     
 end
 
@@ -195,6 +198,7 @@ ip.addParameter('figVisible', 'on');
 ip.addParameter('finalRefinementRadius', 1);
 ip.addParameter('MinimumSize', 10);
 ip.addParameter('ObjectNumber', 1000);
+ip.addParameter('verbose', 'off');
 %ip.addParameter('parpoolNum', 1);
 
 ip.parse(varargin{:});
@@ -261,7 +265,7 @@ pString = 'MSA_mask_';      %Prefix for saving masks to file
 scoreArrayFilePath = [outputDir filesep 'scoreArray_for_channel_' num2str(iChan) '.mat'];
 if ~isfile(scoreArrayFilePath) || ~isequaln(p2, old_p2)
     
-    [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan);
+    [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, p.verbose);
     
     % voteScoreImg
     % dir name for vote score images
@@ -274,7 +278,7 @@ if ~isfile(scoreArrayFilePath) || ~isequaln(p2, old_p2)
     
 else
     
-    refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan);
+    refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, p.verbose);
 
 end   
 
@@ -336,7 +340,7 @@ end
 
 %% When MSA seg is run for the first time with the same segmentation parameter
 
-function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan)
+function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, verbose)
     %% Time series of 5 numbers
 
     pixelmat = reshape(imgStack, [], frmax);
@@ -385,7 +389,7 @@ function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgS
             multiscaleSeg_multiObject_im(im, ...
                 'tightness', currTightness, 'numVotes', currNumVotes, ...
                 'finalRefinementRadius', p.finalRefinementRadius, ...
-                'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber);
+                'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber, 'verbose', verbose);
     end
     
     %% save voting scoreArray
@@ -398,7 +402,7 @@ end
 
 %% When MSA seg is already run with the same parameters except thresholds
 
-function refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan)
+function refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, verbose)
     
     % Load scoreArray    
     tmp = load([outputDir filesep 'scoreArray_for_channel_' num2str(iChan) '.mat']);
@@ -407,6 +411,6 @@ function refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan)
     refinedMask = multiscaleSeg_multiObject_2ndRun(scoreArray, ...
             'numVotes', p.numVotes, 'tightness', p.tightness, ...
             'finalRefinementRadius', p.finalRefinementRadius, ...
-            'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber);
+            'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber, 'verbose', verbose);
 
 end

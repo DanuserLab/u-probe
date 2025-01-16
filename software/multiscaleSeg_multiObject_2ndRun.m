@@ -34,6 +34,7 @@ ip.addParameter('numVotes', -1);
 ip.addParameter('finalRefinementRadius', 1);
 ip.addParameter('MinimumSize', 10);
 ip.addParameter('ObjectNumber', 1000);
+ip.addParameter('verbose', 'off');
 
 ip.parse(varargin{:});
 p = ip.Results;
@@ -56,12 +57,14 @@ masksCell =  cell(frmax, 1);
 
 for fr = 1:frmax
 
-    disp('=====')
-    disp(['Frame: ', num2str(fr)])  
     res = scoreArray(:,:,fr);
 
     tab = tabulate(res(:));
-    tabulate(res(:));
+    if isequal(p.verbose, 'on')
+        disp('=====')
+        disp(['Frame: ', num2str(fr)])  
+        tabulate(res(:)); % use verbose param to turn off - QZ
+    end
 
     if (p.numVotes < 0)    
     
@@ -87,13 +90,17 @@ for fr = 1:frmax
         numVotes = tightnessNumModel;
 
         res0 = (res >= numVotes);
+        if isequal(p.verbose, 'on')
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp([num2str(numVotes), ' (tightness: ', num2str(p.tightness), ')'])
+        end
 
     else
         res0 = (res >= p.numVotes);
+        if isequal(p.verbose, 'on')
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp(num2str(p.numVotes))
+        end
     end
     
     % final refinement    

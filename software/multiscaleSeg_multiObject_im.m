@@ -48,6 +48,7 @@ ip.addParameter('numVotes', -1);
 ip.addParameter('finalRefinementRadius', 1);
 ip.addParameter('MinimumSize', 10);
 ip.addParameter('ObjectNumber', 1000);
+ip.addParameter('verbose', 'off');
 
 ip.parse(im, varargin{:});
 p = ip.Results;
@@ -141,7 +142,9 @@ end
 res_0 = mean(maskingResultArr(:,:,1:end), 3, 'omitnan');
 res = round(res_0 .* numModels);
 tab = tabulate(res(:));
-tabulate(res(:));
+if isequal(p.verbose, 'on')
+    tabulate(res(:)); % use verbose param to turn off - QZ
+end
 
 val = tab(:,1);
 counts = tab(:,2);
@@ -170,13 +173,17 @@ if (p.numVotes < 0)
         numVotes = tightnessNumModel;
 
         res0 = (res >= numVotes);
+        if isequal(p.verbose, 'on')
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp([num2str(numVotes), ' (tightness: ', num2str(p.tightness), ')'])
+        end
 
 else
         res0 = (res >= p.numVotes);
+        if isequal(p.verbose, 'on')
         disp('Threshold of votes: mask = (Value >= threshold)'); 
         disp(num2str(p.numVotes))
+        end
 end
 
 %% final refinement
