@@ -21,6 +21,12 @@ Comprehensive descriptions of the u-probe package and its individual steps are a
 Please submit any feedback on this package, including bugs and feature requests, via the [Issues](https://github.com/DanuserLab/u-probe/issues) tab that is located at the top of this GitHub repository. General instruction on how to create an issue on GitHub can be found [here](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue).
 
 ## Version History
+### New in Version 3.6 (Jan. 16th, 2025):
+- Improved the MSA (Multi Scale Automatic) Segmentation Process. Added a "Preview segmented image" option, and options to turn the output figures or verbose mode on or off.
+
+### New in Version 3.5 (Dec. 5th, 2024):
+- Improved the External Segmentation Process. Now accept both single TIFF images and image stacks as external masks.
+  
 ### New in Version 3.4 (Nov. 8th, 2024):
 - Improved the Bleedthrough Correction Process
 - Bug fixed in Bleedthrough Coefficient Calculation tool
