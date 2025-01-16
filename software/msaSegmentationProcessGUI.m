@@ -112,6 +112,14 @@ else
   set(handles.checkbox_figFlag, 'Value', 0)
 end
 
+% Initialize previewing constants
+userData.previewFig =-1;
+userData.chanIndx = 0;
+userData.imIndx=0;
+userData.processIndex=funParams.ProcessIndex;
+set(hObject, 'UserData', userData);
+
+
 % set GUI with popupmenu_ProcessIndex
 sumChanProc =  cellfun(@(x) isa(x,'GenerateSummationChannelProcess'),userData.MD.processes_);
 sumChanProcID=find(sumChanProc);
@@ -134,10 +142,24 @@ elseif funParams.useSummationChannel == 0
     handles.popupmenu_ProcessIndex.Enable = 'off';
 end
 
+
+% Initialize the frame number slider and edit for preview panel
+nFrames=userData.MD.nFrames_;
+if nFrames > 1
+    set(handles.slider_frameNumber,'Value',1,'Min',1,...
+        'Max',nFrames,'SliderStep',[1/double(nFrames)  10/double(nFrames)]);
+else
+    set(handles.slider_frameNumber,'Enable','off');
+end
+set(handles.text_nFrames,'String',['/ ' num2str(nFrames)]);
+set(handles.edit_frameNumber,'Value',1);
+
+
 % Update user data and GUI data
 handles.output = hObject;
-set(handles.figure1, 'UserData', userData);
+set(hObject, 'UserData', userData);
 guidata(hObject, handles);
+update_data(hObject,eventdata,handles);
 
 
 % --- Outputs from this function are returned to the command line.
@@ -160,6 +182,11 @@ if isfield(userData, 'helpFig') && ishandle(userData.helpFig)
    delete(userData.helpFig) 
 end
 
+% close preview figure and delete preview folder
+if ishandle(userData.previewFig), delete(userData.previewFig); end 
+PreviewOutputDir = [handles.figure1.UserData.MD.outputDirectory_ filesep 'MSApreviewTempDir'];
+if isfolder(PreviewOutputDir); rmdir(PreviewOutputDir, 's'); end
+
 set(handles.figure1, 'UserData', userData);
 guidata(hObject,handles);
 
@@ -181,6 +208,11 @@ function pushbutton_cancel_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton_cancel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+% delete preview folder
+PreviewOutputDir = [handles.figure1.UserData.MD.outputDirectory_ filesep 'MSApreviewTempDir'];
+if isfolder(PreviewOutputDir); rmdir(PreviewOutputDir, 's'); end
+    
 delete(handles.figure1);
 
 
@@ -251,6 +283,11 @@ else
   funParams.useSummationChannel = 0;
 end
 
+% close preview figure and delete preview folder
+if ishandle(userData.previewFig), delete(userData.previewFig); end 
+PreviewOutputDir = [handles.figure1.UserData.MD.outputDirectory_ filesep 'MSApreviewTempDir'];
+if isfolder(PreviewOutputDir); rmdir(PreviewOutputDir, 's'); end
+
 % Set parameters and update main window
 processGUI_ApplyFcn(hObject, eventdata, handles,funParams);
 
@@ -276,10 +313,14 @@ function checkbox_useSummationChannel_Callback(hObject, eventdata, handles)
 if handles.checkbox_useSummationChannel.Value == 0
     handles.text_GenerateSummationChannelProcess.Enable = 'off';
     handles.popupmenu_ProcessIndex.Enable = 'off';
+    handles.popupmenu_ProcessIndex.Value = 1;
 else
     handles.text_GenerateSummationChannelProcess.Enable = 'on';
     handles.popupmenu_ProcessIndex.Enable = 'on';
 end
+
+update_data(hObject,eventdata,handles);
+
 
 % --- Executes on button press in tightness_checkbox.
 function tightness_checkbox_Callback(hObject, eventdata, handles)
@@ -308,6 +349,9 @@ else
     handles.numVotes_display.Enable = 'off';
 end
 
+update_data(hObject,eventdata,handles);
+
+
 % --- Executes on button press in numVotes_checkbox.
 function numVotes_checkbox_Callback(hObject, eventdata, handles)
 % hObject    handle to numVotes_checkbox (see GCBO)
@@ -334,6 +378,9 @@ else
     handles.tightness_display.String = 'Inactive';
     handles.tightness_display.Enable = 'off';
 end
+
+update_data(hObject,eventdata,handles);
+
 
 % --- Executes on selection change in popupmenu_ProcessIndex.
 function popupmenu_ProcessIndex_Callback(hObject, eventdata, handles)
@@ -377,6 +424,9 @@ end
 set(handles.listbox_selectedChannels,'String',channelString,'UserData',channelIndex);
 
 
+update_data(hObject,eventdata,handles);
+
+
 
 
 % --- Executes on slider movement.
@@ -388,6 +438,8 @@ function tightness_slider_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 handles.tightness_display.String = num2str(round((handles.tightness_slider.Value)*10)/10); % round tightness to 0.1 per step when drag slider
+
+update_data(hObject,eventdata,handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -403,7 +455,6 @@ end
 handles.tightness_slider.Value = .5;
 
 
-
 % --- Executes on numVotes slider movement.
 function numVotes_slider_Callback(hObject, eventdata, handles)
 % hObject    handle to numVotes_slider (see GCBO)
@@ -413,6 +464,13 @@ function numVotes_slider_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
 handles.numVotes_display.String = num2str(round(handles.numVotes_slider.Value)); % round numVotes to 1 per step when drag slider
+
+if round(handles.numVotes_slider.Value) == 0 % avoid numVotes to be 0, otherwise error.
+    set(handles.numVotes_slider, 'Value', 1);
+    handles.numVotes_display.String = '1';
+end
+
+update_data(hObject,eventdata,handles);
 
 
 % --- Executes during object creation, after setting all properties.
@@ -426,3 +484,354 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 handles.numVotes_slider.Value = 22;
+
+% --- Executes on button press in checkbox_preview.
+function checkbox_preview_Callback(hObject, eventdata, handles)
+
+if get(handles.checkbox_preview,'Value'), 
+    update_data(hObject,eventdata,handles); 
+else
+    userData = get(handles.figure1, 'UserData');
+    if ishandle(userData.previewFig), delete(userData.previewFig); end
+    % Save data and update graphics
+    set(handles.figure1,'UserData',userData);
+    guidata(hObject, handles);
+end
+
+function imageNumber_edition(hObject,eventdata, handles)
+
+% Retrieve the value of the selected image
+if strcmp(get(hObject,'Tag'),'edit_frameNumber')
+    imageNumber = str2double(get(handles.edit_frameNumber, 'String'));
+else
+    imageNumber = get(handles.slider_frameNumber, 'Value');
+end
+imageNumber=round(imageNumber);
+
+% Check the validity of the supplied threshold
+if isnan(imageNumber) || imageNumber < 0 || imageNumber > get(handles.slider_frameNumber,'Max')
+    warndlg('Please provide a valid frame number.','Setting Error','modal');
+end
+
+set(handles.slider_frameNumber,'Value',imageNumber);
+set(handles.edit_frameNumber,'String',imageNumber);
+
+% Save data and update graphics
+guidata(hObject, handles);
+update_data(hObject,eventdata,handles);
+
+
+function edit_ObjectNumber_Callback(hObject, eventdata, handles)
+
+update_data(hObject,eventdata,handles);
+
+
+function edit_finalRefinementRadius_Callback(hObject, eventdata, handles)
+
+update_data(hObject,eventdata,handles);
+
+
+
+function update_data(hObject,eventdata, handles)
+
+userData = get(handles.figure1, 'UserData');
+if isempty(userData), userData = struct(); end
+
+
+% Retrieve the channex index, frame number, and process index
+props=get(handles.listbox_selectedChannels,{'UserData','Value'});
+if isempty(props{1}), return; end
+chanIndx = props{1}(props{2});
+imIndx = get(handles.slider_frameNumber,'Value');
+props= get(handles.popupmenu_ProcessIndex,{'UserData','Value'});
+processIndex = props{1}{props{2}};
+
+% Load a new image in case the image number or channel has been changed
+if (chanIndx~=userData.chanIndx) ||  (imIndx~=userData.imIndx)  || ~isequal(processIndex, userData.processIndex)
+    if ~isempty(processIndex) && ~isempty(userData.crtPackage.processes_{processIndex}) &&...
+            userData.crtPackage.processes_{processIndex}.checkChannelOutput(chanIndx)
+        userData.imData=userData.crtPackage.processes_{processIndex}.loadOutImage(chanIndx,imIndx);
+    else
+        userData.imData=userData.MD.channels_(chanIndx).loadImage(imIndx);
+    end
+
+    userData.updateImage=1;
+    userData.chanIndx=chanIndx;
+    userData.imIndx=imIndx;
+    userData.processIndex=processIndex;
+else
+    userData.updateImage=0;
+end
+
+
+% Save the data
+set(handles.figure1, 'UserData', userData);
+guidata(hObject,handles);
+
+% Update graphics if applicable
+if get(handles.checkbox_preview,'Value') % Preview
+
+    imData=userData.imData;
+
+    %% Algorithm for preview, adapted from multiScaleAutoSeg_multiObject.m
+    % see MSA_Seg_multiObject_imDir.m
+    % Edit to make it work for all MD.Reader, such as BioFormatsReader. Before, the algorithm only works for TiffSeriesReader.
+    % Edit again to make it also work when input is from output of a previous process. - Qiongjing (Jenny) Zou, Nov 2022
+
+    k = chanIndx;
+    PreviewOutputDir = [userData.MD.outputDirectory_ filesep 'MSApreviewTempDir'];
+    if ~isfolder(PreviewOutputDir); mkdir(PreviewOutputDir); end % deleted this when setting GUI closed
+    masksOutDir = [PreviewOutputDir filesep 'Masks'];
+    mkClrDir(masksOutDir);
+
+    I = cell(1, 1);
+    I{1} = imData;
+    imgStack = imData;
+
+    % Retreive Parameters on the GUI:
+    % tightness and numVotes are exclusive options: if one is chosen, the other is inactive (-1);
+    if handles.tightness_checkbox.Value == 1
+        currTightness = str2double(handles.tightness_display.String);
+    else
+        currTightness = -1;
+    end
+    if handles.numVotes_checkbox.Value == 1
+        currNumVotes = str2double(handles.numVotes_display.String);
+    else
+        currNumVotes = -1;
+    end
+    currObjectNumber = str2double(get(handles.edit_ObjectNumber, 'String'));
+    currFinalRefinementRadius = str2double(get(handles.edit_finalRefinementRadius, 'String'));
+    % below params not on GUI:
+    currImagesOut = 1; % default value
+    currFigVisible = 'on'; % always on for preview
+    currMinimumSize = 10; % default value
+
+    % call the main algorithm fcn:
+    refinedMask = MSA_Seg_multiObject_imDir_2(I, imgStack, 1, PreviewOutputDir, ...
+        masksOutDir, k, imIndx, 'tightness', currTightness, 'numVotes', currNumVotes, ...
+        'ObjectNumber', currObjectNumber, 'finalRefinementRadius', currFinalRefinementRadius, ...
+        'imagesOut', currImagesOut, 'figVisible', currFigVisible, 'MinimumSize', currMinimumSize);
+
+    %%%% end of algorithm
+
+    %% imagesOut
+
+    if currNumVotes >= 0
+        prefname = ['numVotes_', num2str(currNumVotes)];
+    elseif currTightness >= 0
+        prefname = ['tightness_', num2str(currTightness)];
+    else
+        prefname = '_';
+    end
+
+    dName2 = ['MSASeg_maskedImages_' prefname '_for_channel_' num2str(k) '_frame_' num2str(imIndx)];
+    imOutDir = fullfile(PreviewOutputDir, dName2);
+    if ~isdir(imOutDir); mkdir(imOutDir); end
+
+    allint = imgStack(:);
+    intmin = quantile(allint, 0.002);
+    intmax = quantile(allint, 0.998);
+
+    % Create figure if non-existing or closed
+    if ~ishandle(userData.previewFig)
+        userData.previewFig = figure('NumberTitle','off','Name','MSA segmentation preview',...
+            'Position',[50 50 userData.MD.imSize_(2) userData.MD.imSize_(1)]);
+        axes('Position',[0 0 1 1]);
+    else
+        figure(userData.previewFig);
+    end
+
+    for fr = 1 % preview 1 frame
+        imshow(I{fr}, [intmin, intmax])
+        hold on
+        bdd = bwboundaries(refinedMask{fr});
+
+        for k = 1:numel(bdd)
+            bdd1 = bdd{k};
+            plot(bdd1(:,2), bdd1(:,1), 'r');
+        end
+        hold off
+
+        h = getframe(userData.previewFig);  % Capture the frame from the figure
+        imwrite(h.cdata, [imOutDir, filesep 'frame_', num2str(imIndx), '.tif'])
+    end
+
+
+    set(handles.figure1, 'UserData', userData);
+    guidata(hObject,handles);
+end
+% end of update_data fcn
+
+
+function refinedMask = MSA_Seg_multiObject_imDir_2(I, imgStack, frmax, outputDir, masksOutDir, iChan, imIndx, varargin)
+% deleted input arg fileNames, as we do not need to save the file for preview
+% added imIndx (frameNumber) input for preview
+% frmax is just 1 for preview
+% temperary put outputDir as userData.MD.outputDirectory_ and created a temp dir in it for masksOutDir
+
+%% Parse input
+
+ip = inputParser;
+ip.addParameter('tightness', 0.5, @(x) isnumeric(x) && (x==-1 || x >= 0 || x<=1));
+ip.addParameter('numVotes', -1);
+ip.addParameter('imagesOut', 1);
+ip.addParameter('figVisible', 'on');
+ip.addParameter('finalRefinementRadius', 1);
+ip.addParameter('MinimumSize', 10);
+ip.addParameter('ObjectNumber', 1000);
+%ip.addParameter('parpoolNum', 1);
+
+ip.parse(varargin{:});
+p = ip.Results;
+
+if (p.numVotes > 0); p.tightness = -1; end
+
+%% control parameter structs to prevent redundant running when only a threshold is changed
+
+p1 = p;     % MSA seg parameter struct
+
+% Select MSA seg parameters except the threshold parameters
+p2 = struct();
+p2.finalRefinementRadius = p.finalRefinementRadius;
+p2.MinimumSize = p.MinimumSize;
+p2.ObjectNumber = p.ObjectNumber;
+
+% Get old parameter
+if isfile([outputDir filesep 'p2_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat'] )
+    tmp = load([outputDir filesep 'p2_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat']);
+    old_p2 = tmp.p2;
+else
+    % If it is the 1st run (w/o 'p2.mat' output), then make a fake 'old_p2'
+    % struct, which always differs from 'p2' to run the segmentation in the below.
+    old_p2 = struct();
+    old_p2.finalRefinementRadius = -1;       % a fake value
+end
+
+if ~isfolder(outputDir); mkdir(outputDir); end
+save([outputDir filesep 'p1_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat'], 'p1');
+save([outputDir filesep 'p2_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat'], 'p2');
+
+%% -------- Parameters ---------- %%
+
+if ~isdir(masksOutDir); mkdir(masksOutDir); end
+
+pString = 'MSA_mask_';      %Prefix for saving masks to file
+
+
+%% Run MSA seg only if it has not run with the same parameter except threshodling parms
+% Check if MSA Seg is once run for this movieData.
+% Only if not, run MSA algorithm to compute voting score Array (step 1) and
+% masks (step 2).
+% If previous results for the same parameters (except thresholds) exist,
+% then compute only masks (step 2).
+
+scoreArrayFilePath = [outputDir filesep 'scoreArray_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat'];
+if ~isfile(scoreArrayFilePath) || ~isequaln(p2, old_p2)
+
+    [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, imIndx);
+
+    % voteScoreImg
+    % dir name for vote score images
+    imOutDir2 = [outputDir filesep 'MSASeg_voteScoreImgs_for_channel_' num2str(iChan) '_frame_' num2str(imIndx)];
+    if ~isfolder(imOutDir2); mkdir(imOutDir2); end
+
+    for fr = frmax % preview frame number
+        imwrite(voteScoreImgs{fr}, fullfile(imOutDir2, ['voteScores_', 'frame_' num2str(imIndx),'.tif']) );
+    end
+
+else
+
+    refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, imIndx);
+
+end
+
+%% save mask images
+
+for fr = frmax % preview frame number
+    %Write the refined mask to file
+    imwrite(mat2gray(refinedMask{fr}), fullfile(masksOutDir, [pString, '_frame_' num2str(imIndx),'.tif']) );
+end
+
+
+% end of MSA_Seg_multiObject_imDir_2 fcn
+
+
+
+%% When MSA seg is run for the first time with the same segmentation parameter
+
+function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgStack, iChan, imIndx)
+    %% Time series of 5 numbers
+
+    pixelmat = reshape(imgStack, [], frmax);
+    pixelmat1 = pixelmat;
+    pixelmat1(pixelmat1 == 0) = NaN;
+    %sum(isnan(pixelmat1(:)))
+
+    mts = mean(pixelmat1, 1, 'omitnan');
+    medts = median(pixelmat1, 1, 'omitnan');
+    q1ts = quantile(pixelmat1, 0.25, 1);
+    q3ts = quantile(pixelmat1, 0.75, 1);
+    q99ts = quantile(pixelmat1, 0.99, 1);
+    q01ts = quantile(pixelmat1, 0.01, 1);
+
+    fts = figure('Visible', 'off'); % turn off stat fig for preview
+    plot(mts)
+    hold on
+
+    plot(medts)
+    plot(q1ts)
+    plot(q3ts)
+    plot(q01ts)
+    plot(q99ts)
+    hold off
+
+    legend('Mean', 'Median', 'Perct25', 'Perct75', 'Perct01', 'Perct99')
+    title('Time series of 5 summary statistics')
+
+%     %% saveas 
+%     saveas(fts, [outputDir filesep 'TS_of_5statistics_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.png'], 'png')
+    
+    %% Multi Scale Segmentation
+
+    refinedMask = cell(frmax, 1);
+    voteScoreImgs = cell(frmax, 1); 
+    currTightness = p.tightness;
+    currNumVotes = p.numVotes;
+    
+    scoreArray = zeros(size(imgStack));    
+
+    for fr = frmax % preview frame number
+        disp('=====')
+        disp('Preview Frame. Please wait...')    
+        im = imgStack(:,:,fr);
+        [refinedMask{fr}, voteScoreImgs{fr}, scoreArray(:,:,fr)] = ...
+            multiscaleSeg_multiObject_im(im, ...
+                'tightness', currTightness, 'numVotes', currNumVotes, ...
+                'finalRefinementRadius', p.finalRefinementRadius, ...
+                'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber);
+    end
+    
+    %% save voting scoreArray
+    %save(fullfile(outputDir, 'scoreArray.mat'), 'scoreArray');
+
+    save([outputDir filesep 'scoreArray_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat'], 'scoreArray') % important, once created will use for diff threshold
+
+
+% end of MSA_Seg_1stRun fcn
+
+
+
+%% When MSA seg is already run with the same parameters except thresholds
+
+function refinedMask = MSA_Seg_2ndRun(p, outputDir, iChan, imIndx)
+    
+    % Load scoreArray    
+    tmp = load([outputDir filesep 'scoreArray_for_channel_' num2str(iChan) '_frame_' num2str(imIndx) '.mat']);
+    scoreArray = tmp.scoreArray;
+
+    refinedMask = multiscaleSeg_multiObject_2ndRun(scoreArray, ...
+            'numVotes', p.numVotes, 'tightness', p.tightness, ...
+            'finalRefinementRadius', p.finalRefinementRadius, ...
+            'MinimumSize', p.MinimumSize, 'ObjectNumber', p.ObjectNumber);
+% end of MSA_Seg_2ndRun fcn
