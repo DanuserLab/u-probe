@@ -22,7 +22,7 @@ Please submit any feedback on this package, including bugs and feature requests,
 
 ## Version History
 ### New in Version 3.6 (Jan. 16th, 2025):
-- Improved the MSA (Multi Scale Automatic) Segmentation Process. Added a "Preview segmented image" option, and options to turn the output figures or verbose mode on or off.
+- Improved the MSA (Multi Scale Automatic) Segmentation Process. Added a "Preview segmented image" option, and options to turn the display output figures or verbose mode on or off during the execution.
 
 ### New in Version 3.5 (Dec. 5th, 2024):
 - Improved the External Segmentation Process. Now accept both single TIFF images and image stacks as external masks.
