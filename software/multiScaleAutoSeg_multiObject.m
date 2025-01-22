@@ -382,8 +382,10 @@ function [refinedMask, voteScoreImgs] = MSA_Seg_1stRun(p, outputDir, frmax, imgS
     scoreArray = zeros(size(imgStack));    
 
     parfor fr = 1:frmax
+        if isequal(verbose, 'on')
         disp('=====')
-        disp(['Frame: ', num2str(fr)])    
+        disp(['Frame: ', num2str(fr)])
+        end   
         im = imgStack(:,:,fr);
         [refinedMask{fr}, voteScoreImgs{fr}, scoreArray(:,:,fr)] = ...
             multiscaleSeg_multiObject_im(im, ...

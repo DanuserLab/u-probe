@@ -109,6 +109,53 @@ end
 set(handles.listbox_selectedChannels,'String',channelString,...
     'UserData',channelIndex);
 
+% By default the avail channel list box always list the raw images (see line 60). But preview alway shows the image from the last valid parentProc. So, we do not have to do below for biosensorsPackage.
+% % In BiosensorsPackage, auto-set listbox_availableChannels and listbox_selectedChannels to ShadeCorrectionProcess or CropShadeCorrectROIProcess's output
+% if isa(userData.crtPackage, 'BiosensorsPackage')
+%     for i = numel(userData.crtProc.processTree_):-1:1
+%         if isa(userData.crtProc.processTree_{i}, 'CropShadeCorrectROIProcess')
+%             processIndex = i;
+%             break; % Exit the loop as the CropShadeCorrectROIProcess is found
+%         elseif isa(userData.crtProc.processTree_{i}, 'ShadeCorrectionProcess')
+%             processIndex = i;
+%         end
+%     end
+% 
+%     % Update avail input channels and selected channels:
+%     % Read process and check available channels
+%     if isempty(processIndex)
+%         allChannelIndex=1:numel(userData.MD.channels_);
+%     else
+%         allChannelIndex = find(userData.MD.processes_{processIndex}.checkChannelOutput);
+%     end
+% 
+%     % Set up available channels listbox
+%     if ~isempty(allChannelIndex)
+%         if isempty(processIndex)
+%             channelString = userData.MD.getChannelPaths(allChannelIndex);
+%         else
+%             channelString = userData.MD.processes_{processIndex}.outFilePaths_(1,allChannelIndex);
+%         end
+%     else
+%         channelString = {};
+%     end
+%     set(handles.listbox_availableChannels,'String',channelString,'UserData',allChannelIndex);
+% 
+%     % Set up selected channels listbox
+%     channelIndex = get(handles.listbox_selectedChannels, 'UserData');
+%     channelIndex = intersect(channelIndex,allChannelIndex);
+%     if ~isempty(channelIndex)
+%         if isempty(processIndex)
+%             channelString = userData.MD.getChannelPaths(channelIndex);
+%         else
+%             channelString = userData.MD.processes_{processIndex}.outFilePaths_(1,channelIndex);
+%         end
+%     else
+%         channelString = {};
+%     end
+%     set(handles.listbox_selectedChannels,'String',channelString,'UserData',channelIndex);
+% end
+
 
 
 % set GUI with Parameters
@@ -175,6 +222,8 @@ set(handles.popupmenu_ProcessIndex,'String',sumChanProcString,...
 
 % Update channels listboxes depending on the selected process
 popupmenu_ProcessIndex_Callback(hObject, eventdata, handles)
+
+userData = get(handles.figure1, 'UserData'); % retrive the userData again b/c it may be just updated in the callback above.
 
 if funParams.useSummationChannel == 1
     handles.text_GenerateSummationChannelProcess.Enable = 'on';
@@ -361,13 +410,13 @@ function checkbox_useSummationChannel_Callback(hObject, eventdata, handles)
 if handles.checkbox_useSummationChannel.Value == 0
     handles.text_GenerateSummationChannelProcess.Enable = 'off';
     handles.popupmenu_ProcessIndex.Enable = 'off';
-    handles.popupmenu_ProcessIndex.Value = 1;
+%     handles.popupmenu_ProcessIndex.Value = 1; % do not do this, b/c Input Channels list boxes will not update.
 else
     handles.text_GenerateSummationChannelProcess.Enable = 'on';
     handles.popupmenu_ProcessIndex.Enable = 'on';
 end
 
-update_data(hObject,eventdata,handles);
+% update_data(hObject,eventdata,handles); % No need to update preview, b/c preview alway shows the image from the last valid parentProc
 
 
 % --- Executes on button press in tightness_checkbox.
@@ -472,7 +521,7 @@ end
 set(handles.listbox_selectedChannels,'String',channelString,'UserData',channelIndex);
 
 
-update_data(hObject,eventdata,handles);
+% update_data(hObject,eventdata,handles); % No need to update preview, b/c preview alway shows the image from the last valid parentProc
 
 
 
@@ -643,14 +692,13 @@ props=get(handles.listbox_selectedChannels,{'UserData','Value'});
 if isempty(props{1}), return; end
 chanIndx = props{1}(props{2});
 imIndx = get(handles.slider_frameNumber,'Value');
-props= get(handles.popupmenu_ProcessIndex,{'UserData','Value'});
-processIndex = props{1}{props{2}};
 
 % Load a new image in case the image number or channel has been changed
-if (chanIndx~=userData.chanIndx) ||  (imIndx~=userData.imIndx)  || ~isequal(processIndex, userData.processIndex)
-    if ~isempty(processIndex) && ~isempty(userData.crtPackage.processes_{processIndex}) &&...
-            userData.crtPackage.processes_{processIndex}.checkChannelOutput(chanIndx)
-        userData.imData=userData.crtPackage.processes_{processIndex}.loadOutImage(chanIndx,imIndx);
+% NOTE: preview always shows the image from the last valid parentProc. - QZ
+if (chanIndx~=userData.chanIndx) ||  (imIndx~=userData.imIndx)
+    if ~isempty(userData.parentProc) && ~isempty(userData.crtPackage.processes_{userData.parentProc}) &&...
+            userData.crtPackage.processes_{userData.parentProc}.checkChannelOutput(chanIndx)
+        userData.imData=userData.crtPackage.processes_{userData.parentProc}.loadOutImage(chanIndx,imIndx);
     else
         userData.imData=userData.MD.channels_(chanIndx).loadImage(imIndx);
     end
@@ -658,7 +706,6 @@ if (chanIndx~=userData.chanIndx) ||  (imIndx~=userData.imIndx)  || ~isequal(proc
     userData.updateImage=1;
     userData.chanIndx=chanIndx;
     userData.imIndx=imIndx;
-    userData.processIndex=processIndex;
 else
     userData.updateImage=0;
 end

@@ -657,6 +657,7 @@ imIndx = get(handles.slider_frameNumber,'Value');
 thresholdValue = get(handles.slider_threshold, 'Value');
 
 % Load a new image in case the image number or channel has been changed
+% NOTE: preview always shows the image from the last valid parentProc. - QZ
 if (chanIndx~=userData.chanIndx) ||  (imIndx~=userData.imIndx)
     if ~isempty(userData.parentProc) && ~isempty(userData.crtPackage.processes_{userData.parentProc}) &&...
             userData.crtPackage.processes_{userData.parentProc}.checkChannelOutput(chanIndx)
