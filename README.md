@@ -1,4 +1,4 @@
-# u-probe 3.2
+# u-probe 3.6
 <a class="twitter-share-button"
    href="https://twitter.com/intent/tweet?text=🚀 Check out @DanuserLab's u-probe software package on GitHub: https://github.com/danuserlab/u-probe"
    data-size="large">
