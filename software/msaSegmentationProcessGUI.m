@@ -163,7 +163,7 @@ set(handles.listbox_selectedChannels,'String',channelString,...
 if funParams.tightness == -1
     handles.tightness_checkbox.Value = 0;
     handles.tightness_slider.Enable = 'off';
-    handles.tightness_slider.Value = .5;
+    handles.tightness_slider.Value = .50;
     handles.tightness_display.String = 'Inactive';
     handles.tightness_display.Enable = 'off';
 elseif funParams.tightness <=1 && funParams.tightness >= 0
@@ -534,7 +534,7 @@ function tightness_slider_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'Value') returns position of slider
 %        get(hObject,'Min') and get(hObject,'Max') to determine range of slider
-handles.tightness_display.String = num2str(round((handles.tightness_slider.Value)*10)/10); % round tightness to 0.1 per step when drag slider
+handles.tightness_display.String = num2str(round((handles.tightness_slider.Value)*100)/100); % round tightness to 0.01 per step when drag slider
 
 update_data(hObject,eventdata,handles);
 
