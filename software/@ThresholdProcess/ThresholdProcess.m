@@ -87,7 +87,7 @@ classdef ThresholdProcess < SegmentationProcess & NonSingularProcess
             name = 'Thresholding';
         end
         function h = GUI()
-            h = @thresholdProcessGUI;
+            h = @thresholdProcessGUI_App;
         end
         function methods = getMethods(varargin)
             thresholdingMethods(1).name = 'MinMax';

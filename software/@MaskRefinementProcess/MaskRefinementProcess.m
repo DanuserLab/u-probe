@@ -53,8 +53,10 @@ classdef MaskRefinementProcess < MaskProcessingProcess
         function name =getName()
             name = 'Mask Refinement';
         end
+        %DEBUG APP_DESIGNER MIGRATION EDITS: renamed opening function from
+        %maskRefinementProcessGUI_App to MaskRefinementProcessGUI_App
         function h = GUI()
-            h= @maskRefinementProcessGUI;
+            h= @MaskRefinementProcessGUI_App;
         end
         
         function funParams = getDefaultParams(owner,varargin)

@@ -73,8 +73,6 @@ userData = get(handles.figure1, 'UserData');
 if isempty(userData), userData = struct(); end
 funParams = userData.crtProc.funParams_;
 
-% Below line 59-91 is from processGUI_OpeningFcn, b/c initChannel is 0, then this part will not be called
-% in processGUI_OpeningFcn, so need to add here.
 % Set up available input channels
 set(handles.listbox_availableChannels,'String',userData.MD.getChannelPaths(), ...
     'UserData',1:numel(userData.MD.channels_));
@@ -108,8 +106,6 @@ end
 
 set(handles.listbox_selectedChannels,'String',channelString,...
     'UserData',channelIndex);
-
-
 
 set(handles.edit_GaussFilterSigma,'String',funParams.GaussFilterSigma);
 
@@ -190,7 +186,7 @@ else
     userData.thresholdValue=0;
 end
 
-% Initialize the frame number slider and edit
+% Initialize the frame number slider and eidt
 nFrames=userData.MD.nFrames_;
 if nFrames > 1
     set(handles.slider_frameNumber,'Value',1,'Min',1,...
@@ -594,7 +590,7 @@ update_data(hObject,eventdata,handles);
 function imageNumber_edition(hObject,eventdata, handles)
 
 % Retrieve the value of the selected image
-if strcmp(get(hObject,'Tag'),'edit_frameNumber')
+if strcmp(get(hObject,'Tag'),'edit_imageNumber')
     imageNumber = str2double(get(handles.edit_frameNumber, 'String'));
 else
     imageNumber = get(handles.slider_frameNumber, 'Value');
@@ -603,7 +599,7 @@ imageNumber=round(imageNumber);
 
 % Check the validity of the supplied threshold
 if isnan(imageNumber) || imageNumber < 0 || imageNumber > get(handles.slider_frameNumber,'Max')
-    warndlg('Please provide a valid frame number.','Setting Error','modal');
+    warndlg('Please provide a valid coefficient.','Setting Error','modal');
 end
 
 set(handles.slider_frameNumber,'Value',imageNumber);
@@ -649,7 +645,7 @@ if strcmp(get(get(hObject,'Parent'),'Tag'),'uipanel_channels') ||...
 end
 
 
-% Retrieve the channex index, frame number, and threshold
+% Retrieve the channex index
 props=get(handles.listbox_selectedChannels,{'UserData','Value'});
 if isempty(props{1}), return; end
 chanIndx = props{1}(props{2});
@@ -657,7 +653,6 @@ imIndx = get(handles.slider_frameNumber,'Value');
 thresholdValue = get(handles.slider_threshold, 'Value');
 
 % Load a new image in case the image number or channel has been changed
-% NOTE: preview always shows the image from the last valid parentProc. - QZ
 if (chanIndx~=userData.chanIndx) ||  (imIndx~=userData.imIndx)
     if ~isempty(userData.parentProc) && ~isempty(userData.crtPackage.processes_{userData.parentProc}) &&...
             userData.crtPackage.processes_{userData.parentProc}.checkChannelOutput(chanIndx)
@@ -695,7 +690,7 @@ set(handles.figure1, 'UserData', userData);
 guidata(hObject,handles);
 
 % Update graphics if applicable
-if get(handles.checkbox_preview,'Value') % Preview
+if get(handles.checkbox_preview,'Value')
 
     % Create figure if non-existing or closed
     if ~ishandle(userData.previewFig)
