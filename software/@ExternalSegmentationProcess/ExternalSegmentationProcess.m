@@ -75,7 +75,7 @@ classdef ExternalSegmentationProcess < SegmentationProcess
         end
         
         function h = GUI()
-            h= @ExternalSegmentationProcessGUI_App;
+            h= @externalSegmentationProcessGUI;
         end
 
         function funParams = getDefaultParams(owner,varargin)

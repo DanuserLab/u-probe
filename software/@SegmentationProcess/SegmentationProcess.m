@@ -51,7 +51,7 @@ classdef SegmentationProcess < MaskProcess
             name = 'Segmentation';
         end
         function h = GUI()
-            h= @AbstractProcessGUI_App;
+            h= @abstractProcessGUI;
         end
         function procClasses = getConcreteClasses(varargin)
             procClasses = ...

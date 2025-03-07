@@ -62,7 +62,7 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
             name = 'MSA Segmentation';
         end
         function h = GUI()
-            h= @MsaSegmentationProcessGUI_App;
+            h= @msaSegmentationProcessGUI;
         end
         
         function funParams = getDefaultParams(owner,varargin)
@@ -90,6 +90,8 @@ classdef MultiScaleAutoSegmentationProcess < SegmentationProcess
             funParams.imagesOut = 1;
             funParams.figVisible = 'off'; % Changed default from 'on' to 'off'. - Qiongjing (Jenny) Zou, Nov 2024
             funParams.MinimumSize = 10; % unit is pixel
+
+            funParams.verbose = 'off'; % Added to turn off verbose, default is 'off'. - Qiongjing (Jenny) Zou, Jan 2025
 
 
 
