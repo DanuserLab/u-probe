@@ -67,6 +67,10 @@ function makeRatioMovie(movieData,varargin)
 % 10/2010
 %
 %
+% Use the output ratio images from current proc, OutputRatioProcess, (Instead 
+% of using the output from step 10 or 11) to make ratio movie in step 12.
+% by Qiongjing (Jenny) Zou, April 2025
+%
 % Copyright (C) 2025, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
@@ -85,6 +89,7 @@ function makeRatioMovie(movieData,varargin)
 % along with BiosensorsPackage.  If not, see <http://www.gnu.org/licenses/>.
 % 
 % 
+
 
 %% -------------- Input ------------- %%
 
@@ -119,22 +124,29 @@ end
 %Get the ratio numerator channel
 iNumChan = find(cellfun(@(x)(~isempty(x)),movieData.processes_{iRatProc}.outFilePaths_));
 
-%Check if photobleach correction has been done
-iPbProc = movieData.getProcessIndex('PhotobleachCorrectionProcess',1,1);
-if isempty(iPbProc) || ~movieData.processes_{iPbProc}.checkChannelOutput(iNumChan)
-    disp('No valid photobleach correction found - using un-corrected ratio images.')
-    iProc = iRatProc;
-else
-    iProc = iPbProc;
-end
+% %Check if photobleach correction has been done
+% iPbProc = movieData.getProcessIndex('PhotobleachCorrectionProcess',1,1);
+% if isempty(iPbProc) || ~movieData.processes_{iPbProc}.checkChannelOutput(iNumChan)
+%     disp('No valid photobleach correction found - using un-corrected ratio images.')
+%     iProc = iRatProc;
+% else
+%     iProc = iPbProc;
+% end
 
+% Use the output ratio images from current proc, OutputRatioProcess, to
+% make ratio movie in the same step.
+% Update 2025-4 by Qiongjing (Jenny) Zou
+iCurrProc = movieData.getProcessIndex('OutputRatioProcess',1,1);
+if isempty(iCurrProc)
+    error('The Ratio output images have not been successfully processed. Please check processing!')
+end
 
 %% ------------ Make Movie! ----------- %%
 
 %Create argument array for call to makeMovieMovie.m Later arguments will
 %override earlier arguments, so the user can override any of these.
 argArray = {'FileName','ratioMovie',...
-            'ProcessIndex',iProc,...
+            'ProcessIndex',iCurrProc,...
             'ChannelIndex',iNumChan,...
             'ColorMap','jet',...
             'ColorBar',true};

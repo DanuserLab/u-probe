@@ -157,6 +157,33 @@ movieData.processes_{iProc}.setOutImagePath(p.ChannelIndex,outDir);
 
 nImages = movieData.nFrames_;
 
+%Set up IntensityLimits (color limits), added 2025-4:
+if p.CustClim
+    iPreProc = iPBProc * hasPB + iRProc * ~hasPB;
+    PreClim = movieData.processes_{iPreProc}.getIntensityLimits(p.ChannelIndex);
+
+    if p.CustClimByValue
+        if isempty(p.CustClimValLow)
+            p.CustClimValLow = PreClim(1);
+        else
+            assert((p.CustClimValLow >= PreClim(1) && p.CustClimValLow  <= PreClim(2)),'The customized low intensity limit is out of range!')
+        end
+        if isempty(p.CustClimValHigh)
+            p.CustClimValHigh = PreClim(2);
+        else
+            assert((p.CustClimValHigh >= PreClim(1) && p.CustClimValHigh  <= PreClim(2) && p.CustClimValLow <= p.CustClimValHigh),'The customized high intensity limit is out of range!')
+        end
+
+        CustClimValLow = p.CustClimValLow;
+        CustClimValHigh = p.CustClimValHigh;
+    else
+        assert((p.CustClimPercentLow >= 0 && p.CustClimPercentLow  <= 1),'The customized low intensity limit percentage is out of range!')
+        assert((p.CustClimPercentHigh >= 0 && p.CustClimPercentHigh  <= 1),'The customized high intensity limit percentage is out of range!')
+        CustClimValLow = p.CustClimPercentLow*(PreClim(2)-PreClim(1))+PreClim(1);
+        CustClimValHigh = PreClim(2) - p.CustClimPercentHigh*(PreClim(2)-PreClim(1));
+    end
+end
+
 %% ------- Output -------- %%
 %Writes the ratio images to file.
 
@@ -184,6 +211,16 @@ for iImage = 1:nImages
     
     ratMax = max(ratMax,nanmax(currRat(:)));
     ratMin = min(ratMin,nanmin(currRat(:)));
+
+    % adjust the intensity limit based on the color limit set by user, added 2025-4:
+    if p.CustClim
+        if nanmin(currRat(:)) < CustClimValLow
+            currRat(currRat <= CustClimValLow) = CustClimValLow;
+        end
+        if nanmax(currRat(:)) > CustClimValHigh
+            currRat(currRat >= CustClimValHigh) = CustClimValHigh;
+        end
+    end
     
     % %Write it back to file.    
     % imwrite(uint16(currRat),[outDir filesep inNames{1}{iImage}(1:end-4) '.tif'],...
@@ -202,7 +239,11 @@ end
 
 % Save ratio limits
 intensityLimits=cell(1,numel(movieData.channels_));
-intensityLimits{p.ChannelIndex(1)}=[ratMin ratMax];
+if ~p.CustClim
+    intensityLimits{p.ChannelIndex(1)}=[ratMin ratMax];
+else
+    intensityLimits{p.ChannelIndex(1)}=[CustClimValLow CustClimValHigh]; % Save customized Clim if specified by user, edited 2025-4
+end
 movieData.processes_{iProc}.setIntensityLimits(intensityLimits);
 
 if ~p.BatchMode && ishandle(wtBar)

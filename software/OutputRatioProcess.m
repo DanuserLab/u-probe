@@ -24,6 +24,12 @@ classdef OutputRatioProcess < DoubleProcessingProcess
 % along with BiosensorsPackage.  If not, see <http://www.gnu.org/licenses/>.
 % 
 % 
+
+    % Add options for user to adjust the up and low intensity limit (color limit)
+    % BEFORE saving the output ratio images.
+    % If movie saved, it is saved based on the adjusted ratio output
+    % images.
+    % By Qiongjing (Jenny) Zou, April 2025
     
     methods (Access = public)
         
@@ -77,8 +83,8 @@ classdef OutputRatioProcess < DoubleProcessingProcess
             
             %get the image names
             imNames = getOutImageFileNames(obj,iChan);
-            outIm = double(imread([obj.outFilePaths_{1,iChan} filesep imNames{1}{iFrame}]));
-            
+            % outIm = double(imread([obj.outFilePaths_{1,iChan} filesep imNames{1}{iFrame}]));
+            outIm = imread([obj.outFilePaths_{1,iChan} filesep imNames{1}{iFrame}]); % edited 2025-4, output is already double
         end
         
         
@@ -98,10 +104,15 @@ classdef OutputRatioProcess < DoubleProcessingProcess
         end
         function figHan = resultDisplay(obj)
             
-            figHan = msgbox(['The ratio images have been multiplied by a scale factor and saved as .tif images to the folder "' ...
+            figHan = msgbox(['The ratio images have been saved as .tif images to the folder "' ...
                 obj.funParams_.OutputDirectory '". They can be viewed with ImageJ or a comparable image viewing program.']);
             
         end
+
+        function outIm = loadOutImage(obj, iChan, iFrame, varargin) % Added 2025-4, b/c DoubleProcessingProcess assumed output is .mat files, but this proc output is tifs
+            outIm=obj.loadChannelOutput(iChan, iFrame, varargin{:});
+        end
+        
         
     end
     methods(Static)
@@ -125,13 +136,23 @@ classdef OutputRatioProcess < DoubleProcessingProcess
             funParams.OutputDirectory =  [outputDir  filesep 'ratio_tiffs'];
             funParams.ChannelIndex = [];
             % funParams.ScaleFactor = 1000; % removed Scale Factor on 2024-10-8 as per Gabe Kreider-Letterman' request.
+
             funParams.BatchMode = false;
             funParams.MakeMovie=0;
-            funParams.MovieOptions.Saturate=0;
-            funParams.MovieOptions.ConstantScale=0;
+            funParams.MovieOptions.Saturate=0; % no longer on setting GUI. Do not adjust this! As Clim already customized by user before saving output tif, when saving movie, just use the output Tifs from THIS proc. - 2025-4
+            funParams.MovieOptions.ConstantScale=0; % If true, (color axis limits) selected for the first image will be used throughout the movie.
             funParams.MovieOptions.ColorBar=1;
-            funParams.MovieOptions.MakeAvi=0;
-            funParams.MovieOptions.MakeMov=1;
+            funParams.MovieOptions.MakeAvi=1; % Change default to make AVI movie, b/c MOV cannot play if produced from matlab 2021a and later
+            funParams.MovieOptions.MakeMov=0; 
+            
+            % Below params added 2025-4 to apply customized clim by value or
+            % percent BEFORE save outputRatio images:
+            funParams.CustClim = true;
+            funParams.CustClimValLow = []; % Lower end of Intensity Limit (Color Limit) set by user. 
+            funParams.CustClimValHigh = []; % Higher end of Intensity Limit (Color Limit) set by user.
+            funParams.CustClimByValue = true;
+            funParams.CustClimPercentLow = 0; % from 0-1 float, e.g. 0.1 cut Clim 10% from lower end
+            funParams.CustClimPercentHigh = 0; % from 0-1 float, e.g. 0.1 cut Clim 10% from upper end, like Saturate
             
         end
     end
