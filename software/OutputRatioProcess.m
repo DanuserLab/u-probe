@@ -147,7 +147,7 @@ classdef OutputRatioProcess < DoubleProcessingProcess
             
             % Below params added 2025-4 to apply customized clim by value or
             % percent BEFORE save outputRatio images:
-            funParams.CustClim = true;
+            funParams.CustClim = false;
             funParams.CustClimValLow = []; % Lower end of Intensity Limit (Color Limit) set by user. 
             funParams.CustClimValHigh = []; % Higher end of Intensity Limit (Color Limit) set by user.
             funParams.CustClimByValue = true;

@@ -157,6 +157,7 @@ classdef DoubleProcessingProcess < ImageProcessingProcess
                 == obj.owner_.nFrames_)),iChan);
         end
         function outIm = loadOutImage(obj,iChan,iFrame)
+            % assumed output of the process is .mat files
             
             if nargin < 3 || isempty(iChan) || isempty(iFrame)
                 error('You must specify a frame and channel number!')
