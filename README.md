@@ -21,6 +21,9 @@ Comprehensive descriptions of the u-probe package and its individual steps are a
 Please submit any feedback on this package, including bugs and feature requests, via the [Issues](https://github.com/DanuserLab/u-probe/issues) tab that is located at the top of this GitHub repository. General instruction on how to create an issue on GitHub can be found [here](https://docs.github.com/en/issues/tracking-your-work-with-issues/creating-an-issue).
 
 ## Version History
+### New in Version 3.7 (April, 2025):
+- Updated Step 12 Ratio Output to allow manual specification of color scale limits for the ratio output images.
+
 ### New in Version 3.6 (Jan. 16th, 2025):
 - Improved the MSA (Multi Scale Automatic) Segmentation Process. Added a "Preview segmented image" option, and options to turn the display output figures or verbose mode on or off during the execution.
 
