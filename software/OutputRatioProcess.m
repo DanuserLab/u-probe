@@ -150,9 +150,9 @@ classdef OutputRatioProcess < DoubleProcessingProcess
             funParams.CustClim = false;
             funParams.CustClimValLow = []; % Lower end of Intensity Limit (Color Limit) set by user. 
             funParams.CustClimValHigh = []; % Higher end of Intensity Limit (Color Limit) set by user.
-            funParams.CustClimByValue = true;
+            funParams.CustClimByPercent = true;
             funParams.CustClimPercentLow = 0; % from 0-1 float, e.g. 0.1 cut Clim 10% from lower end
-            funParams.CustClimPercentHigh = 0; % from 0-1 float, e.g. 0.1 cut Clim 10% from upper end, like Saturate
+            funParams.CustClimPercentHigh = 0.99; % from 0-1 float, percentage from 0, e.g. 0.9 cut Clim 10% from upper end
             
         end
     end

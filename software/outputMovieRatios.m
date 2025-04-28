@@ -159,28 +159,33 @@ nImages = movieData.nFrames_;
 
 %Set up IntensityLimits (color limits), added 2025-4:
 if p.CustClim
-    iPreProc = iPBProc * hasPB + iRProc * ~hasPB;
+    if hasPB
+        iPreProc = iPBProc;
+    else
+        iPreProc = iRProc;
+    end
     PreClim = movieData.processes_{iPreProc}.getIntensityLimits(p.ChannelIndex);
 
-    if p.CustClimByValue
+    if ~p.CustClimByPercent
         if isempty(p.CustClimValLow)
             p.CustClimValLow = PreClim(1);
-        else
-            assert((p.CustClimValLow >= PreClim(1) && p.CustClimValLow  <= PreClim(2)),'The customized low intensity limit is out of range!')
+        % else
+        %     assert((p.CustClimValLow >= PreClim(1) && p.CustClimValLow  <= PreClim(2)),'The customized lower color limit value is out of range!')
         end
         if isempty(p.CustClimValHigh)
             p.CustClimValHigh = PreClim(2);
-        else
-            assert((p.CustClimValHigh >= PreClim(1) && p.CustClimValHigh  <= PreClim(2) && p.CustClimValLow <= p.CustClimValHigh),'The customized high intensity limit is out of range!')
+        % else
+        %     assert((p.CustClimValHigh >= PreClim(1) && p.CustClimValHigh  <= PreClim(2) && p.CustClimValLow <= p.CustClimValHigh),'The customized upper color limit value is out of range!')
         end
 
         CustClimValLow = p.CustClimValLow;
         CustClimValHigh = p.CustClimValHigh;
     else
-        assert((p.CustClimPercentLow >= 0 && p.CustClimPercentLow  <= 1),'The customized low intensity limit percentage is out of range!')
-        assert((p.CustClimPercentHigh >= 0 && p.CustClimPercentHigh  <= 1),'The customized high intensity limit percentage is out of range!')
+        assert((p.CustClimPercentLow >= 0 && p.CustClimPercentLow  <= 1),'The customized lower color limit percentage is out of range!')
+        assert((p.CustClimPercentHigh >= 0 && p.CustClimPercentHigh  <= 1),'The customized upper color limit percentage is out of range!')
+        assert((p.CustClimPercentLow <= p.CustClimPercentHigh),'The customized lower color limit percentage should be smaller than the upper color limit percentage!')
         CustClimValLow = p.CustClimPercentLow*(PreClim(2)-PreClim(1))+PreClim(1);
-        CustClimValHigh = PreClim(2) - p.CustClimPercentHigh*(PreClim(2)-PreClim(1));
+        CustClimValHigh = p.CustClimPercentHigh*(PreClim(2)-PreClim(1))+PreClim(1);
     end
 end
 

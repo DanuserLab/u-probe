@@ -82,9 +82,9 @@ if ~isempty(funParams.ChannelIndex)
         'Userdata', funParams.ChannelIndex )
     set(handles.listbox_input1, 'Value', funParams.ChannelIndex(1))
     channelIndex = funParams.ChannelIndex;
-elseif ~isempty(userData.crtPackage.processes_{9})
+elseif ~isempty(userData.crtPackage.processes_{10})
     % If ratio process exist and has a numerator
-    channelIndex= userData.crtPackage.processes_{9}.funParams_.ChannelIndex;
+    channelIndex= userData.crtPackage.processes_{10}.funParams_.ChannelIndex;
     if ~isempty(channelIndex)
         set(handles.edit_dir, 'String',userData.MD.getChannelPaths(channelIndex(1)), ...
             'Userdata',channelIndex(1));
@@ -101,9 +101,9 @@ end
 % Get color limits from step 11 PhotobleachCorrectionProcess (if run) or 10
 % RatioProcess
 if ~isempty(userData.crtPackage.processes_{11})
-    PreClim = userData.crtPackage.processes_{11}.getIntensityLimits(channelIndex);
+    PreClim = userData.crtPackage.processes_{11}.getIntensityLimits(channelIndex(1));
 elseif ~isempty(userData.crtPackage.processes_{10})
-    PreClim = userData.crtPackage.processes_{10}.getIntensityLimits(channelIndex);
+    PreClim = userData.crtPackage.processes_{10}.getIntensityLimits(channelIndex(1));
 else
     errordlg('No previous Ratio Process found.','Setting Error','modal');
     return;
@@ -114,47 +114,41 @@ if funParams.CustClim
     set(get(handles.uipanel_CustClim,'Children'),'Enable','on');
 else
     set(get(handles.uipanel_CustClim,'Children'),'Enable','off');
-    set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','off');
+    set(get(handles.uipanel_CustClimValue,'Children'),'Enable','off');
 end
 
-set(handles.checkbox_CustClimByValue,'Value',funParams.CustClimByValue);
+set(handles.checkbox_CustClimByPercent,'Value',funParams.CustClimByPercent);
 if funParams.CustClim
-    if funParams.CustClimByValue
-        set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','off');
-        set([handles.text_CustClimValLow, handles.edit_CustClimValLow, handles.slider_CustClimValLow, ...
-             handles.text_CustClimValHigh, handles.edit_CustClimValHigh, handles.slider_CustClimValHigh], ...
+    if funParams.CustClimByPercent
+        set(get(handles.uipanel_CustClimValue,'Children'),'Enable','off');
+        set([handles.text_CustClimPercentLow, handles.edit_CustClimPercentLow, handles.text16, handles.slider_CustClimPercentLow, ...
+             handles.text_CustClimPercentHigh, handles.edit_CustClimPercentHigh, handles.text17, handles.slider_CustClimPercentHigh], ...
              'Enable', 'on');
     else
-        set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','on');
-        set([handles.text_CustClimValLow, handles.edit_CustClimValLow, handles.slider_CustClimValLow, ...
-             handles.text_CustClimValHigh, handles.edit_CustClimValHigh, handles.slider_CustClimValHigh], ...
+        set(get(handles.uipanel_CustClimValue,'Children'),'Enable','on');
+        set([handles.text_CustClimPercentLow, handles.edit_CustClimPercentLow, handles.text16, handles.slider_CustClimPercentLow, ...
+             handles.text_CustClimPercentHigh, handles.edit_CustClimPercentHigh, handles.text17, handles.slider_CustClimPercentHigh], ...
              'Enable', 'off');
     end
 end
 
-set(handles.slider_CustClimValLow, 'SliderStep', [0.01 0.01], 'Min', PreClim(1), 'Max', PreClim(2));
-set(handles.slider_CustClimValHigh, 'SliderStep', [0.01 0.01], 'Min', PreClim(1), 'Max', PreClim(2));
 
-if ~isempty(funParams.CustClimValLow) && funParams.CustClimValLow >= PreClim(1) && funParams.CustClimValLow <= PreClim(2)
+if ~isempty(funParams.CustClimValLow) % && funParams.CustClimValLow >= PreClim(1) && funParams.CustClimValLow <= PreClim(2)
     set(handles.edit_CustClimValLow, 'String', num2str(funParams.CustClimValLow))
-    set(handles.slider_CustClimValLow, 'Value', funParams.CustClimValLow)
 else
     set(handles.edit_CustClimValLow, 'String', num2str(PreClim(1)))
-    set(handles.slider_CustClimValLow, 'Value', PreClim(1))
 end
 
-if ~isempty(funParams.CustClimValHigh) && funParams.CustClimValHigh >= PreClim(1) && funParams.CustClimValHigh <= PreClim(2)
+if ~isempty(funParams.CustClimValHigh) % && funParams.CustClimValHigh >= PreClim(1) && funParams.CustClimValHigh <= PreClim(2)
     set(handles.edit_CustClimValHigh, 'String', num2str(funParams.CustClimValHigh))
-    set(handles.slider_CustClimValHigh, 'Value', funParams.CustClimValHigh)
 else
     set(handles.edit_CustClimValHigh, 'String', num2str(PreClim(2)))
-    set(handles.slider_CustClimValHigh, 'Value', PreClim(2))
 end
 
-set(handles.edit_CustClimPercentLow, 'String', num2str(funParams.CustClimPercentLow))
+set(handles.edit_CustClimPercentLow, 'String', num2str(funParams.CustClimPercentLow*100))
 set(handles.slider_CustClimPercentLow, 'Value', funParams.CustClimPercentLow)
 
-set(handles.edit_CustClimPercentHigh, 'String', num2str(funParams.CustClimPercentHigh))
+set(handles.edit_CustClimPercentHigh, 'String', num2str(funParams.CustClimPercentHigh*100))
 set(handles.slider_CustClimPercentHigh, 'Value', funParams.CustClimPercentHigh)
 
 
@@ -229,34 +223,39 @@ end
 % end
 
 if str2double(get(handles.edit_CustClimValLow, 'String')) < 0
-  errordlg('Please provide a valid input for ''Low-end color limit value''.','Setting Error','modal');
+  errordlg('Please provide a valid input for ''Lower color limit value''.','Setting Error','modal');
   return;
 end
 
 if str2double(get(handles.edit_CustClimValHigh, 'String')) < 0
-  errordlg('Please provide a valid input for ''High-end color limit value''.','Setting Error','modal');
+  errordlg('Please provide a valid input for ''Upper color limit value''.','Setting Error','modal');
   return;
 end
 
 if str2double(get(handles.edit_CustClimValLow, 'String')) >= str2double(get(handles.edit_CustClimValHigh, 'String'))
-  errordlg('Low-end color limit value needs to be smaller than the high-end color limit value.','Setting Error','modal');
+  errordlg('Lower color limit value needs to be smaller than the upper color limit value.','Setting Error','modal');
   return;
 end    
 
 if isnan(str2double(get(handles.edit_CustClimPercentLow, 'String'))) ...
     || str2double(get(handles.edit_CustClimPercentLow, 'String')) < 0
-  errordlg('Please provide a valid input for ''Low-end color limit cut-off''.','Setting Error','modal');
+  errordlg('Please provide a valid input for ''Lower color limit %''.','Setting Error','modal');
   return;
 end
 
 if isnan(str2double(get(handles.edit_CustClimPercentHigh, 'String'))) ...
     || str2double(get(handles.edit_CustClimPercentHigh, 'String')) < 0
-  errordlg('Please provide a valid input for ''High-end color limit cut-off:''.','Setting Error','modal');
+  errordlg('Please provide a valid input for ''Upper color limit %:''.','Setting Error','modal');
   return;
 end
 
-if str2double(get(handles.edit_CustClimPercentLow, 'String')) + str2double(get(handles.edit_CustClimPercentHigh, 'String')) > 1
-  errordlg('Total of Low-end and High-end color limit cut-offs cannot be more than 1.','Setting Error','modal');
+if str2double(get(handles.edit_CustClimPercentLow, 'String')) + str2double(get(handles.edit_CustClimPercentHigh, 'String')) > 100
+  errordlg('Total of lower and upper color limit percentage cannot be more than 100.','Setting Error','modal');
+  return;
+end 
+
+if str2double(get(handles.edit_CustClimPercentLow, 'String')) >= str2double(get(handles.edit_CustClimPercentHigh, 'String'))
+  errordlg('Lower color limit percentage needs to be smaller than the upper color limit percentage.','Setting Error','modal');
   return;
 end   
 
@@ -279,9 +278,9 @@ funParams.ChannelIndex = channelIndex;
 
 
 funParams.CustClim = get(handles.checkbox_CustClim,'Value');
-funParams.CustClimByValue = get(handles.checkbox_CustClimByValue,'Value');
-funParams.CustClimValLow = get(handles.slider_CustClimValLow, 'Value');
-funParams.CustClimValHigh = get(handles.slider_CustClimValHigh, 'Value');
+funParams.CustClimByPercent = get(handles.checkbox_CustClimByPercent,'Value');
+funParams.CustClimValLow = str2double(get(handles.edit_CustClimValLow, 'String'));
+funParams.CustClimValHigh = str2double(get(handles.edit_CustClimValHigh, 'String'));
 funParams.CustClimPercentLow = get(handles.slider_CustClimPercentLow, 'Value');
 funParams.CustClimPercentHigh = get(handles.slider_CustClimPercentHigh, 'Value');
 
@@ -376,62 +375,49 @@ function checkbox_CustClim_Callback(hObject, ~, handles)
 
 if get(hObject,'Value')
     set(get(handles.uipanel_CustClim,'Children'),'Enable','on');
-    if get(handles.checkbox_CustClimByValue,'Value')
-        set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','off');
-        set([handles.text_CustClimValLow, handles.edit_CustClimValLow, handles.slider_CustClimValLow, ...
-             handles.text_CustClimValHigh, handles.edit_CustClimValHigh, handles.slider_CustClimValHigh], ...
+    if get(handles.checkbox_CustClimByPercent,'Value')
+        set(get(handles.uipanel_CustClimValue,'Children'),'Enable','off');
+        set([handles.text_CustClimPercentLow, handles.edit_CustClimPercentLow, handles.text16, handles.slider_CustClimPercentLow, ...
+             handles.text_CustClimPercentHigh, handles.edit_CustClimPercentHigh, handles.text17, handles.slider_CustClimPercentHigh], ...
              'Enable', 'on');
     else
-        set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','on');
-        set([handles.text_CustClimValLow, handles.edit_CustClimValLow, handles.slider_CustClimValLow, ...
-             handles.text_CustClimValHigh, handles.edit_CustClimValHigh, handles.slider_CustClimValHigh], ...
+        set(get(handles.uipanel_CustClimValue,'Children'),'Enable','on');
+        set([handles.text_CustClimPercentLow, handles.edit_CustClimPercentLow, handles.text16, handles.slider_CustClimPercentLow, ...
+             handles.text_CustClimPercentHigh, handles.edit_CustClimPercentHigh, handles.text17, handles.slider_CustClimPercentHigh], ...
              'Enable', 'off');
     end
 else
     set(get(handles.uipanel_CustClim,'Children'),'Enable','off');
-    set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','off');
+    set(get(handles.uipanel_CustClimValue,'Children'),'Enable','off');
 end
 
-% --- Executes on button press in checkbox_CustClimByValue.
-function checkbox_CustClimByValue_Callback(hObject, ~, handles)
+% --- Executes on button press in checkbox_CustClimByPercent.
+function checkbox_CustClimByPercent_Callback(hObject, ~, handles)
 
 if get(hObject,'Value')
-    set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','off');
-    set([handles.text_CustClimValLow, handles.edit_CustClimValLow, handles.slider_CustClimValLow, ...
-         handles.text_CustClimValHigh, handles.edit_CustClimValHigh, handles.slider_CustClimValHigh], ...
+    set(get(handles.uipanel_CustClimValue,'Children'),'Enable','off');
+    set([handles.text_CustClimPercentLow, handles.edit_CustClimPercentLow, handles.text16, handles.slider_CustClimPercentLow, ...
+         handles.text_CustClimPercentHigh, handles.edit_CustClimPercentHigh, handles.text17, handles.slider_CustClimPercentHigh], ...
          'Enable', 'on');
 else
-    set(get(handles.uipanel_CustClimPercent,'Children'),'Enable','on');
-    set([handles.text_CustClimValLow, handles.edit_CustClimValLow, handles.slider_CustClimValLow, ...
-         handles.text_CustClimValHigh, handles.edit_CustClimValHigh, handles.slider_CustClimValHigh], ...
+    set(get(handles.uipanel_CustClimValue,'Children'),'Enable','on');
+    set([handles.text_CustClimPercentLow, handles.edit_CustClimPercentLow, handles.text16, handles.slider_CustClimPercentLow, ...
+         handles.text_CustClimPercentHigh, handles.edit_CustClimPercentHigh, handles.text17, handles.slider_CustClimPercentHigh], ...
          'Enable', 'off');
 end
 
 
-function edit_CustClimValLow_Callback(hObject, eventdata, handles)
-value =str2double(get(hObject,'String'));
-set(handles.slider_CustClimValLow,'Value',value);
-
-function slider_CustClimValLow_Callback(hObject, ~, handles)
-set(handles.edit_CustClimValLow,'String',get(hObject,'Value'));
-
-function edit_CustClimValHigh_Callback(hObject, eventdata, handles)
-value =str2double(get(hObject,'String'));
-set(handles.slider_CustClimValHigh,'Value',value);
-
-function slider_CustClimValHigh_Callback(hObject, ~, handles)
-set(handles.edit_CustClimValHigh,'String',get(hObject,'Value'));
 
 function edit_CustClimPercentLow_Callback(hObject, eventdata, handles)
 value =str2double(get(hObject,'String'));
-set(handles.slider_CustClimPercentLow,'Value',value);
+set(handles.slider_CustClimPercentLow,'Value',value/100);
 
 function slider_CustClimPercentLow_Callback(hObject, ~, handles)
-set(handles.edit_CustClimPercentLow,'String',get(hObject,'Value'));
+set(handles.edit_CustClimPercentLow,'String',get(hObject,'Value')*100);
 
 function edit_CustClimPercentHigh_Callback(hObject, eventdata, handles)
 value =str2double(get(hObject,'String'));
-set(handles.slider_CustClimPercentHigh,'Value',value);
+set(handles.slider_CustClimPercentHigh,'Value',value/100);
 
 function slider_CustClimPercentHigh_Callback(hObject, ~, handles)
-set(handles.edit_CustClimPercentHigh,'String',get(hObject,'Value'));
+set(handles.edit_CustClimPercentHigh,'String',get(hObject,'Value')*100);
