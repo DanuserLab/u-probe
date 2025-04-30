@@ -100,9 +100,9 @@ end
 
 % Get color limits from step 11 PhotobleachCorrectionProcess (if run) or 10
 % RatioProcess
-if ~isempty(userData.crtPackage.processes_{11})
+if ~isempty(userData.crtPackage.processes_{11}) && userData.crtPackage.processes_{11}.success_
     PreClim = userData.crtPackage.processes_{11}.getIntensityLimits(channelIndex(1));
-elseif ~isempty(userData.crtPackage.processes_{10})
+elseif ~isempty(userData.crtPackage.processes_{10}) && userData.crtPackage.processes_{10}.success_
     PreClim = userData.crtPackage.processes_{10}.getIntensityLimits(channelIndex(1));
 else
     errordlg('No previous Ratio Process found.','Setting Error','modal');
