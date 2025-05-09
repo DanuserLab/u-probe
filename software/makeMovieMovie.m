@@ -54,7 +54,10 @@ function makeMovieMovie(movieData,varargin)
 %       Optional. Default is false.
 %
 %       ('MakeMov' -> Logical scalar) If true, movie will be saved as .mov.
-%       Optional. Default is true.             
+%       Optional. Default is true. 
+%
+%       ('Clim' -> a 1x2 row vector of positive scalars) defined limits of color 
+%       bar on the saved movie - added by Qiongjing (Jenny) Zou, May 2025
 %
 %       **NOTE** Additional options and possible values are all described
 %       in the help for imageViewer.m. This includes channel specification,
@@ -99,7 +102,7 @@ if nargin < 1 || ~isa(movieData,'MovieData')
     error('The first input must be a valid MovieData object!')
 end
 
-[constRange,cBar,fName,makeAvi,makeMov,imviewArgs] = parseInput(varargin);
+[constRange,cBar,fName,makeAvi,makeMov,imviewArgs, clim] = parseInput(varargin);
 
 
 % ---- Defaults ---- %
@@ -149,7 +152,11 @@ for iImage = 1:nImages
         
     if constRange
         if iImage == 1
-            clim = caxis;
+            if isempty(clim)
+                clim = caxis; % If [], use clim of 1st frame
+            else
+                caxis(clim); % edited to use custom defined clim or the clim of this chan. By Qiongjing (Jenny) Zou, May 2025
+            end
             imviewArgs(end+1:end+2) = {'Saturate',0}; %Disable saturation after first frame if constant scale is enabled.
         else
             caxis(clim);
@@ -200,7 +207,7 @@ if any(strcmp('Protrusion',imviewArgs))
 end
 
 
-function [constRange,cBar,fName,makeAvi,makeMov,imviewArgs] = parseInput(argArray)
+function [constRange,cBar,fName,makeAvi,makeMov,imviewArgs, clim] = parseInput(argArray)
 %Sub-function for parsing variable input arguments
 
 
@@ -212,6 +219,7 @@ fName = [];
 makeAvi = [];
 makeMov = [];
 imviewArgs = {};
+clim = [];
 
 if isempty(argArray)
     return
@@ -246,6 +254,9 @@ for i = 1:2:nArg
            
        case 'MakeMov'
            makeMov = argArray{i+1};
+
+       case 'Clim'
+           clim = argArray{i+1};
            
            
        otherwise

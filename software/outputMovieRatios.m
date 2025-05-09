@@ -245,10 +245,11 @@ end
 % Save ratio limits
 intensityLimits=cell(1,numel(movieData.channels_));
 if ~p.CustClim
-    intensityLimits{p.ChannelIndex(1)}=[ratMin ratMax];
+    clim = [ratMin ratMax];
 else
-    intensityLimits{p.ChannelIndex(1)}=[CustClimValLow CustClimValHigh]; % Save customized Clim if specified by user, edited 2025-4
+    clim = [CustClimValLow CustClimValHigh]; % Save customized Clim if specified by user, edited 2025-4
 end
+intensityLimits{p.ChannelIndex(1)}=clim;
 movieData.processes_{iProc}.setIntensityLimits(intensityLimits);
 
 if ~p.BatchMode && ishandle(wtBar)
@@ -265,7 +266,7 @@ if p.MakeMovie
     movieOptions = reshape(movieOptions,1,numel(movieFields)*2);
     
     % Call the movie creation routine
-    makeRatioMovie(movieData,movieOptions{:});
+    makeRatioMovie(movieData,movieOptions{:},'Clim', clim); % Added Clim arg, Qiongjing (Jenny) Zou, May 2025
 end
 
 %% ----- Finalization ---- %%

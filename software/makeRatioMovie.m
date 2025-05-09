@@ -53,7 +53,10 @@ function makeRatioMovie(movieData,varargin)
 %       Optional. Default is false.
 %
 %       ('MakeMov' -> Logical scalar) If true, movie will be saved as .mov.
-%       Optional. Default is true.             
+%       Optional. Default is true.    
+%   
+%       ('Clim' -> a 1x2 row vector of positive scalars) defined limits of color 
+%       bar on the saved movie - added by Qiongjing (Jenny) Zou, May 2025
 %
 % Output:
 % 
