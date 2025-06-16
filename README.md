@@ -51,6 +51,12 @@ Please submit any feedback on this package, including bugs and feature requests,
 - Included the ratio movie creation within the output process
 - Fixed various bugs (correction image display...)
 
+## Running u-probe Without a MATLAB License
+u-probe 3.7 is now available as a standalone application.
+> Note: You must install MATLAB Runtime to run the standalone application. No MATLAB license is required.
+### For Windows, compiled with MATLAB Runtime R2024b.
+- [Download u-probe 3.7 Standalone](https://cloud.biohpc.swmed.edu/index.php/s/SMyqd5sxPBLQNtH) and [Install MATLAB Runtime R2024b (Windows)](https://www.mathworks.com/products/compiler/matlab-runtime.html)
+
 ## Danuser Lab Links
 [Danuser Lab Website](https://www.danuserlab-utsw.org/)
 
