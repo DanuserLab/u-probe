@@ -56,7 +56,9 @@ u-probe 3.7 is now available as a standalone application.
 > Note: You must install MATLAB Runtime to run the standalone application. No MATLAB license is required.
 ### For Windows, compiled with MATLAB Runtime R2024b.
 - [Download u-probe 3.7 Standalone](https://cloud.biohpc.swmed.edu/index.php/s/SMyqd5sxPBLQNtH) and [Install MATLAB Runtime R2024b (Windows)](https://www.mathworks.com/products/compiler/matlab-runtime.html)
-
+### For Linux, compiled with MATLAB Runtime R2024a.
+- [Download u-probe 3.7 Standalone](https://cloud.biohpc.swmed.edu/index.php/s/nNFdHEFdw2aAoXr) and [Install MATLAB Runtime R2024a (Linux)](https://www.mathworks.com/products/compiler/matlab-runtime.html)
+  
 ## Danuser Lab Links
 [Danuser Lab Website](https://www.danuserlab-utsw.org/)
 
