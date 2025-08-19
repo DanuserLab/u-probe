@@ -219,6 +219,7 @@ sumChanProcValue = find(cellfun(@(x) isequal(x,funParams.ProcessIndex),sumChanPr
 if isempty(sumChanProcValue), sumChanProcValue = 1; end
 set(handles.popupmenu_ProcessIndex,'String',sumChanProcString,...
     'UserData',sumChanProcData,'Value',sumChanProcValue);
+set(handles.checkbox_useSummationChannel,'Value',funParams.useSummationChannel);
 
 % Update channels listboxes depending on the selected process
 popupmenu_ProcessIndex_Callback(hObject, eventdata, handles)
@@ -378,6 +379,7 @@ if handles.checkbox_useSummationChannel.Value == 1
   funParams.ProcessIndex = props{1}{props{2}};
 else 
   funParams.useSummationChannel = 0;
+  funParams.ProcessIndex = [];
 end
 
 % close preview figure and delete preview folder
