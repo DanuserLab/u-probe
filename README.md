@@ -12,6 +12,8 @@ This MATLAB software package allows processing of raw ratiometric biosensor imag
 
 For more information, please see [**Biosensors for characterizing the dynamics of rho family GTPases in living cells**](https://www.ncbi.nlm.nih.gov/pubmed/20235099), *Curr Protoc Cell Biol*, 2010, Chapter 14:Unit 14.11.1-26, written by Louis Hodgson, Feimo Shen, Klaus Hahn.
 
+📺 Tutorial video: [How to Run u-probe (YouTube)](https://youtu.be/O9bch5v-ml8?si=sms1eE1TX0bbVMcy)
+
 ## Documentation
 Detailed instructions for how to download and load the u-probe package into MATLAB is provided via the [Wiki](https://github.com/DanuserLab/u-probe/wiki/Installation) tab that is located at the top of this GitHub repository.
 
