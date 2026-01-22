@@ -74,7 +74,7 @@ function makeRatioMovie(movieData,varargin)
 % of using the output from step 10 or 11) to make ratio movie in step 12.
 % by Qiongjing (Jenny) Zou, April 2025
 %
-% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2026, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 

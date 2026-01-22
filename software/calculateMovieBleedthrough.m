@@ -76,7 +76,7 @@ function movieData = calculateMovieBleedthrough(movieData,varargin)
 % output in matlab 2024a and after.
 % Qiongjing (Jenny) Zou, Nov 2024
 %
-% Copyright (C) 2025, Danuser Lab - UTSouthwestern 
+% Copyright (C) 2026, Danuser Lab - UTSouthwestern 
 %
 % This file is part of BiosensorsPackage.
 % 
@@ -171,7 +171,7 @@ end
 
 h = msgbox('After you click OK, when the next window pops up, select the segmentation process to use masks from for the channel WITH a fluorophore','modal');
 uiwait(h);
-iSegProc(1) = movieData.getProcessIndex('MaskProcess',1,1);
+iSegProc(1) = getProcessIndex(movieData, 'MaskProcess',1,1);
 %Check the specified mask channels
 if ~movieData.processes_{iSegProc(1)}.checkChannelOutput(iMaskChans(1))
     error('Specified mask channels do not have valid masks! Check channels & masks!')
@@ -179,7 +179,7 @@ end
 
 h = msgbox('After you click OK, when the next window pops up, select the segmentation process to use masks from for the channel WITHOUT a fluorophore','modal');
 uiwait(h);
-iSegProc(2) = movieData.getProcessIndex('MaskProcess',1,1);
+iSegProc(2) = getProcessIndex(movieData, 'MaskProcess',1,1);
 %Check the specified mask channels
 if ~movieData.processes_{iSegProc(2)}.checkChannelOutput(iMaskChans(2))
     error('Specified mask channels do not have valid masks! Check channels & masks!')
@@ -301,6 +301,7 @@ disp('Finished with bleedthrough calculation!')
 
 disp(['Please see bleedthrough calculation results in ' movieData.outputDirectory_ filesep dName])
 
+end
 
 function [fChan,bChan,fMaskChan,bMaskChan] = parseInput(argArray)
 
@@ -349,3 +350,57 @@ for i = 1:2:nArg
            error(['"' argArray{i} '" is not a valid option name! Please check input!'])
     end    
 end
+end
+
+
+
+    function iProc = getProcessIndex(obj, type, varargin)
+        % Retrieve the existing process(es) of a given type
+        if isa(type, 'Process'), type = class(type); end
+        iProc = getIndex(obj.processes_, type, varargin{:});
+    end
+
+    function iProc = getIndex(list, type, varargin)
+    % Find the index of a object of given class
+
+    % Input check
+    ip = inputParser;
+    ip.addRequired('list',@iscell);
+    ip.addRequired('type',@ischar);
+    ip.addOptional('nDesired',1,@isscalar);
+    ip.addOptional('askUser',true,@isscalar);
+    ip.addParameter('tag',false, @islogical);
+    ip.parse(list, type, varargin{:});
+    nDesired = ip.Results.nDesired;
+    askUser = ip.Results.askUser;
+
+    if ip.Results.tag
+        iProc = find(cellfun(@(x) strcmp(x.tag_,type) && ~isa(x, 'BackgroundMasksProcess'), list));
+    else
+        iProc = find(cellfun(@(x) isa(x,type) && ~isa(x, 'BackgroundMasksProcess'), list));
+    end
+    nProc = numel(iProc);
+
+    %If there are only nDesired or less processes found, return
+    if nProc <= nDesired, return; end
+    % If more than nDesired processes
+    if askUser
+        isMultiple = nDesired > 1;
+        % check if tag_ propery exists for all processes
+        if all(cellfun(@(x) isprop(x, 'tag_'), list(iProc)))
+            % include tag, if it does
+            names = cellfun(@(x) ([x.getName() '-' x.tag_]), list(iProc), 'UniformOutput', false);
+        else
+            names = cellfun(@(x) (x.getName()), list(iProc), 'UniformOutput', false);
+        end
+        iSelected = listdlg('ListString', names,...
+            'SelectionMode', isMultiple, 'ListSize', [400,400],...
+            'PromptString', ['Select the desired ' type ':']);
+        iProc = iProc(iSelected);
+        assert(~isempty(iProc), 'You must select a process to continue!');
+    else
+        warning('lccb:process', ['More than ' num2str(nDesired) ' objects '...
+            'of class ' type ' were found! Returning most recent!'])
+        iProc = iProc(end:-1:(end-nDesired+1));
+    end
+    end
